@@ -1,0 +1,2797 @@
+<!doctype html>
+<html lang="pt-BR" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedicBio - Sistema ERP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .loading-spinner {
+      border: 3px solid #f3f4f6;
+      border-top: 3px solid #10B981;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-left: 8px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .table-container {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background-color: #F9FAFB;
+      z-index: 10;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background-color: #6B7280;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background-color: #4B5563;
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background-color: #EF4444;
+      transition: all 0.2s;
+    }
+
+    .btn-danger:hover {
+      background-color: #DC2626;
+      transform: translateY(-1px);
+    }
+
+    .btn-info {
+      background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+      transition: all 0.2s;
+    }
+
+    .btn-info:hover:not(:disabled) {
+      background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .nav-btn {
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover {
+      transform: translateX(4px);
+    }
+
+    .nav-btn.active {
+      background-color: #059669;
+    }
+
+    .card {
+      transition: all 0.2s;
+    }
+
+    .card:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, var(--color-from) 0%, var(--color-to) 100%);
+      transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+    }
+
+    @media (max-width: 768px) {
+      .sidebar-desktop {
+        display: none;
+      }
+      
+      .mobile-header {
+        display: flex;
+      }
+    }
+
+    @media (min-width: 769px) {
+      .sidebar-desktop {
+        display: flex;
+      }
+      
+      .mobile-header {
+        display: none;
+      }
+    }
+
+    .sidebar-mobile {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .sidebar-mobile.open {
+      transform: translateX(0);
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    .scroll-container {
+      overflow-y: auto;
+      height: calc(100% - 80px);
+    }
+
+    .form-input {
+      transition: all 0.2s;
+    }
+
+    .form-input:focus {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    }
+
+    .tab-gerenciamento {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.2s;
+      cursor: pointer;
+      background: #F3F4F6;
+      color: #6B7280;
+    }
+
+    .tab-gerenciamento.active {
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .tab-gerenciamento:hover:not(.active) {
+      background: #E5E7EB;
+    }
+
+    .cliente-sugestao {
+      padding: 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #E5E7EB;
+      transition: all 0.2s;
+    }
+
+    .cliente-sugestao:hover {
+      background: #F9FAFB;
+    }
+
+    .cliente-sugestao:last-child {
+      border-bottom: none;
+    }
+
+    .produto-card {
+      border: 2px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+    }
+
+    .produto-card:hover {
+      border-color: #10B981;
+      background: #ECFDF5;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    }
+
+    .carrinho-item {
+      border: 2px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 16px;
+      background: white;
+      transition: all 0.2s;
+    }
+
+    .carrinho-item:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="w-full h-full"><!-- Mobile Header -->
+  <header class="mobile-header bg-gradient-to-r from-green-700 to-green-900 text-white p-4 shadow-lg items-center justify-between"><button onclick="toggleMobileSidebar()" class="text-white text-2xl">☰</button>
+   <h1 class="text-xl font-bold">MedicBio</h1>
+   <div class="w-8"></div>
+  </header>
+  <div class="w-full flex h-full"><!-- Overlay for mobile sidebar -->
+   <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" onclick="toggleMobileSidebar()"></div><!-- Sidebar Desktop -->
+   <aside class="sidebar-desktop w-72 bg-gradient-to-b from-green-700 to-green-900 text-white p-6 flex-col shadow-2xl">
+    <div class="mb-10">
+     <h1 class="text-3xl font-bold mb-2 tracking-tight">MedicBio</h1>
+     <p class="text-green-200 text-sm font-medium">Sistema de Gestão Integrada</p>
+    </div>
+    <nav class="flex-1 space-y-2"><button onclick="showModule('produtos')" class="nav-btn w-full text-left px-5 py-4 rounded-xl hover:bg-green-600 transition text-base font-medium" id="nav-produtos"> <span>📦 Cadastro de Produtos</span> </button> <button onclick="showModule('clientes')" class="nav-btn w-full text-left px-5 py-4 rounded-xl hover:bg-green-600 transition text-base font-medium" id="nav-clientes"> <span>👥 Cadastro de Clientes</span> </button> <button onclick="showModule('gerenciamento')" class="nav-btn w-full text-left px-5 py-4 rounded-xl hover:bg-green-600 transition text-base font-medium" id="nav-gerenciamento"> <span>⚙️ Gerenciamento</span> </button> <button onclick="showModule('caixa')" class="nav-btn w-full text-left px-5 py-4 rounded-xl hover:bg-green-600 transition text-base font-medium" id="nav-caixa"> <span>💰 Gestão de Caixa</span> </button>
+     <div class="border-t border-green-600 my-4"></div><button onclick="abrirOpcoesBaixarBackup()" class="nav-btn w-full text-left px-5 py-4 rounded-xl hover:bg-green-600 transition text-base font-medium bg-green-800"> <span>Baixar Backup</span> </button> <button onclick="abrirImportacao()" class="nav-btn w-full text-left px-5 py-4 rounded-xl hover:bg-green-600 transition text-base font-medium bg-green-800"> <span>📂 Importar Backup</span> </button> <button onclick="confirmarLimparDados()" class="nav-btn w-full text-left px-3 py-2 rounded-lg hover:bg-red-700 transition text-xs font-medium bg-red-600 opacity-70"> <span>🗑️ Limpar Dados</span> </button>
+    </nav>
+    <footer class="mt-auto pt-6 border-t border-green-600">
+     <p class="text-green-200 text-xs">Sistema de Gestão Comercial</p>
+     <p class="text-green-300 text-xs mt-2 font-semibold">v2.0 Local - 2025</p>
+    </footer>
+   </aside><!-- Sidebar Mobile -->
+   <aside id="sidebar-mobile" class="sidebar-mobile fixed top-0 left-0 w-72 h-full bg-gradient-to-b from-green-700 to-green-900 text-white p-6 flex flex-col shadow-2xl z-50">
+    <div class="flex justify-between items-center mb-10">
+     <div>
+      <h1 class="text-2xl font-bold tracking-tight">MedicBio</h1>
+      <p class="text-green-200 text-xs font-medium">Sistema de Gestão</p>
+     </div><button onclick="toggleMobileSidebar()" class="text-white text-2xl">✕</button>
+    </div>
+    <nav class="flex-1 space-y-2"><button onclick="showModule('produtos'); toggleMobileSidebar();" class="nav-btn w-full text-left px-5 py-4 rounded-xl hover:bg-green-600 transition text-base font-medium" id="nav-produtos-mobile"> <span>📦 Cadastro de Produtos</span> </button> <button onclick="showModule('clientes'); toggleMobileSidebar();" class="nav-btn w-full text-left px-5 py-4 rounded-xl hover:bg-green-600 transition text-base font-medium" id="nav-clientes-mobile"> <span>👥 Cadastro de Clientes</span> </button> <button onclick="showModule('gerenciamento'); toggleMobileSidebar();" class="nav-btn w-full text-left px-5 py-4 rounded-xl hover:bg-green-600 transition text-base font-medium" id="nav-gerenciamento-mobile"> <span>⚙️ Gerenciamento</span> </button> <button onclick="showModule('caixa'); toggleMobileSidebar();" class="nav-btn w-full text-left px-5 py-4 rounded-xl hover:bg-green-600 transition text-base font-medium" id="nav-caixa-mobile"> <span>💰 Gestão de Caixa</span> </button>
+     <div class="border-t border-green-600 my-4"></div><button onclick="abrirOpcoesBaixarBackup(); toggleMobileSidebar();" class="nav-btn w-full text-left px-5 py-4 rounded-xl hover:bg-green-600 transition text-base font-medium bg-green-800"> <span>💾 Baixar Backup</span> </button> <button onclick="abrirImportacao(); toggleMobileSidebar();" class="nav-btn w-full text-left px-5 py-4 rounded-xl hover:bg-green-600 transition text-base font-medium bg-green-800"> <span>📂 Importar Backup</span> </button> <button onclick="confirmarLimparDados(); toggleMobileSidebar();" class="nav-btn w-full text-left px-3 py-2 rounded-lg hover:bg-red-700 transition text-xs font-medium bg-red-600 opacity-70"> <span>🗑️ Limpar Dados</span> </button>
+    </nav>
+    <footer class="mt-auto pt-6 border-t border-green-600">
+     <p class="text-green-200 text-xs">Sistema de Gestão Comercial</p>
+    </footer>
+   </aside><!-- Main Content -->
+   <main class="flex-1 bg-gray-50 overflow-y-auto scroll-container">
+    <div class="p-4 md:p-8 max-w-7xl mx-auto"><!-- Módulo Produtos -->
+     <div id="module-produtos" class="module-content hidden">
+      <div class="mb-8">
+       <h2 class="text-4xl font-bold text-gray-800 mb-2">Cadastro de Produtos</h2>
+       <p class="text-gray-600">Gerencie seu estoque, validade e precificação</p>
+      </div><!-- Cards de Status -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+       <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #EF4444; --color-to: #DC2626;">
+        <p class="text-red-100 text-sm mb-2 font-semibold">❌ Produtos em Falta</p>
+        <p id="status-sem-estoque" class="text-4xl font-bold">0</p>
+       </div>
+       <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #F59E0B; --color-to: #D97706;">
+        <p class="text-orange-100 text-sm mb-2 font-semibold">⚠️ Estoque Baixo</p>
+        <p id="status-estoque-baixo" class="text-4xl font-bold">0</p>
+       </div>
+       <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #10B981; --color-to: #059669;">
+        <p class="text-green-100 text-sm mb-2 font-semibold">✅ Estoque OK</p>
+        <p id="status-estoque-ok" class="text-4xl font-bold">0</p>
+       </div>
+      </div><!-- Form Cadastro Produto -->
+      <div class="card bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-8">
+       <h3 class="text-2xl font-bold text-gray-800 mb-6">+ Novo Produto</h3>
+       <form id="form-produto" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div><label for="produto-nome" class="block text-sm font-semibold text-gray-700 mb-2">Nome do Produto</label> <input type="text" id="produto-nome" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+        </div>
+        <div><label for="produto-validade" class="block text-sm font-semibold text-gray-700 mb-2">Validade do Produto</label> <input type="date" id="produto-validade" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+        </div>
+        <div><label for="produto-estoque" class="block text-sm font-semibold text-gray-700 mb-2">Quantidade em Estoque</label> <input type="number" id="produto-estoque" min="0" value="0" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+        </div>
+        <div><label for="produto-estoque-minimo" class="block text-sm font-semibold text-gray-700 mb-2">Estoque Mínimo</label> <input type="number" id="produto-estoque-minimo" min="0" value="10" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+        </div>
+        <div><label for="produto-valor-custo" class="block text-sm font-semibold text-gray-700 mb-2">Valor de Custo (R$)</label> <input type="number" id="produto-valor-custo" step="0.01" min="0" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+        </div>
+        <div><label for="produto-valor-venda" class="block text-sm font-semibold text-gray-700 mb-2">Valor de Venda (R$)</label> <input type="number" id="produto-valor-venda" step="0.01" min="0" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+        </div>
+        <div class="md:col-span-2"><button type="submit" class="btn-primary text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg"> Cadastrar Produto </button>
+        </div>
+       </form>
+      </div><!-- Lista Produtos -->
+      <div class="card bg-white rounded-2xl shadow-lg p-6 md:p-8">
+       <h3 class="text-2xl font-bold text-gray-800 mb-6">Produtos Cadastrados</h3><!-- Busca e Filtros -->
+       <div class="mb-6 flex flex-col md:flex-row gap-4">
+        <div class="flex-1"><input type="text" id="busca-produto" placeholder="🔍 Buscar produto..." oninput="renderProdutos()" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none">
+        </div>
+        <div class="flex gap-2 flex-wrap"><button onclick="filtrarProdutos('todos')" id="filtro-todos" class="px-4 py-2 rounded-lg font-semibold transition bg-green-600 text-white">Todos</button> <button onclick="filtrarProdutos('positivo')" id="filtro-positivo" class="px-4 py-2 rounded-lg font-semibold transition bg-gray-200 text-gray-700 hover:bg-gray-300">✅ Estoque Positivo</button> <button onclick="filtrarProdutos('baixo')" id="filtro-baixo" class="px-4 py-2 rounded-lg font-semibold transition bg-gray-200 text-gray-700 hover:bg-gray-300">⚠️ Estoque Baixo</button> <button onclick="filtrarProdutos('sem')" id="filtro-sem" class="px-4 py-2 rounded-lg font-semibold transition bg-gray-200 text-gray-700 hover:bg-gray-300">❌ Sem Estoque</button>
+        </div>
+       </div>
+       <div class="table-container">
+        <table class="min-w-full">
+         <thead>
+          <tr class="border-b-2 border-gray-200">
+           <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Produto</th>
+           <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Validade</th>
+           <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Estoque</th>
+           <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Mínimo</th>
+           <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Custo</th>
+           <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Venda</th>
+           <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Margem</th>
+           <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Ações</th>
+          </tr>
+         </thead>
+         <tbody id="produtos-list">
+          <tr>
+           <td colspan="8" class="px-4 py-12 text-center text-gray-500">
+            <div class="flex flex-col items-center gap-3"><span class="text-5xl opacity-20">📦</span> <span>Nenhum produto cadastrado</span>
+            </div></td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+      </div>
+     </div><!-- Módulo Clientes -->
+     <div id="module-clientes" class="module-content hidden">
+      <div class="mb-8">
+       <h2 class="text-4xl font-bold text-gray-800 mb-2">👥 Cadastro de Clientes</h2>
+       <p class="text-gray-600">Gestão completa de clientes</p>
+      </div><!-- Cards de Status Clientes -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+       <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #3B82F6; --color-to: #2563EB;">
+        <p class="text-blue-100 text-sm mb-2 font-semibold"> Total de Clientes</p>
+        <p id="status-total-clientes" class="text-4xl font-bold">0</p>
+       </div>
+       <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #F59E0B; --color-to: #D97706;">
+        <p class="text-orange-100 text-sm mb-2 font-semibold">⏳ Aguardando</p>
+        <p id="status-clientes-aguardando" class="text-4xl font-bold">0</p>
+       </div>
+       <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #10B981; --color-to: #059669;">
+        <p class="text-green-100 text-sm mb-2 font-semibold">✅ Confirmados</p>
+        <p id="status-clientes-confirmados" class="text-4xl font-bold">0</p>
+       </div>
+       <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #8B5CF6; --color-to: #7C3AED;">
+        <p class="text-purple-100 text-sm mb-2 font-semibold">🎉 Finalizados</p>
+        <p id="status-clientes-finalizados" class="text-4xl font-bold">0</p>
+       </div>
+      </div><!-- Form Cadastro Cliente -->
+      <div class="card bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-8">
+       <h3 class="text-2xl font-bold text-gray-800 mb-6">+ Novo Cliente</h3>
+       <form id="form-cliente" class="space-y-6">
+        <div>
+         <h4 class="font-bold text-gray-700 mb-4">📋 Dados do Cliente</h4>
+         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div><label for="cliente-data-cadastro" class="block text-sm font-semibold text-gray-700 mb-2">Data do Cadastro</label> <input type="date" id="cliente-data-cadastro" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+          </div>
+          <div><label for="cliente-nome" class="block text-sm font-semibold text-gray-700 mb-2">Nome Completo</label> <input type="text" id="cliente-nome" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+          </div>
+          <div><label for="cliente-telefone1" class="block text-sm font-semibold text-gray-700 mb-2">Telefone 1</label> <input type="tel" id="cliente-telefone1" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+          </div>
+          <div><label for="cliente-telefone2" class="block text-sm font-semibold text-gray-700 mb-2">Telefone 2 (opcional)</label> <input type="tel" id="cliente-telefone2" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+          </div>
+         </div>
+        </div>
+        <div>
+         <h4 class="font-bold text-gray-700 mb-4">📍 Endereço</h4>
+         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div><label for="cliente-cep" class="block text-sm font-semibold text-gray-700 mb-2">CEP</label> <input type="text" id="cliente-cep" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+          </div>
+          <div><label for="cliente-estado" class="block text-sm font-semibold text-gray-700 mb-2">Estado</label> <input type="text" id="cliente-estado" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+          </div>
+          <div><label for="cliente-cidade" class="block text-sm font-semibold text-gray-700 mb-2">Cidade</label> <input type="text" id="cliente-cidade" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+          </div>
+          <div><label for="cliente-rua" class="block text-sm font-semibold text-gray-700 mb-2">Rua</label> <input type="text" id="cliente-rua" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+          </div>
+          <div><label for="cliente-numero" class="block text-sm font-semibold text-gray-700 mb-2">Número</label> <input type="text" id="cliente-numero" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+          </div>
+          <div><label for="cliente-complemento" class="block text-sm font-semibold text-gray-700 mb-2">Complemento</label> <input type="text" id="cliente-complemento" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+          </div>
+          <div><label for="cliente-bairro" class="block text-sm font-semibold text-gray-700 mb-2">Bairro</label> <input type="text" id="cliente-bairro" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+          </div>
+          <div><label for="cliente-ponto-ref" class="block text-sm font-semibold text-gray-700 mb-2">Ponto de Referência</label> <input type="text" id="cliente-ponto-ref" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+          </div>
+         </div>
+        </div>
+        <div><button type="submit" class="btn-primary text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg"> Cadastrar Cliente </button>
+        </div>
+       </form>
+      </div><!-- Lista Clientes -->
+      <div class="card bg-white rounded-2xl shadow-lg p-6 md:p-8">
+       <h3 class="text-2xl font-bold text-gray-800 mb-6">Clientes Cadastrados</h3><!-- Busca de Cliente -->
+       <div class="mb-6"><input type="text" id="busca-cliente" placeholder="🔍 Buscar cliente pelo nome..." oninput="renderClientes()" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none">
+       </div>
+       <div class="table-container">
+        <table class="min-w-full">
+         <thead>
+          <tr class="border-b-2 border-gray-200">
+           <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Data Cadastro</th>
+           <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Cliente</th>
+           <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Telefone</th>
+           <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Receituários</th>
+           <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Ações</th>
+          </tr>
+         </thead>
+         <tbody id="clientes-list">
+          <tr>
+           <td colspan="5" class="px-4 py-12 text-center text-gray-500">
+            <div class="flex flex-col items-center gap-3"><span class="text-5xl opacity-20">👥</span> <span>Nenhum cliente cadastrado</span>
+            </div></td>
+          </tr>
+         </tbody>
+        </table>
+       </div>
+      </div>
+     </div><!-- Módulo Gerenciamento -->
+     <div id="module-gerenciamento" class="module-content hidden">
+      <div class="mb-8">
+       <h2 class="text-4xl font-bold text-gray-800 mb-2">⚙️ Gerenciamento</h2>
+       <p class="text-gray-600">Controle de atendimentos e receituários</p>
+      </div><!-- Tabs de Gerenciamento -->
+      <div class="card bg-white rounded-2xl shadow-lg p-4 mb-6">
+       <div class="flex flex-wrap gap-2"><button onclick="mudarAbaGerenciamento('atendimento')" id="tab-atendimento" class="tab-gerenciamento active"> 🔄 Atendimentos </button>
+       </div>
+      </div><!-- Conteúdo Atendimento -->
+      <div id="gerenciamento-content-atendimento" class="gerenciamento-content"><!-- Form Novo Atendimento -->
+       <div class="card bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-8">
+        <h3 class="text-2xl font-bold text-gray-800 mb-6">+ Novo Atendimento</h3>
+        <form id="form-atendimento" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+         <div><label for="atend-data" class="block text-sm font-semibold text-gray-700 mb-2">Data do Recebimento</label> <input type="date" id="atend-data" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+         </div>
+         <div><label for="atend-horario" class="block text-sm font-semibold text-gray-700 mb-2">Horário da Mensagem</label> <input type="time" id="atend-horario" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+         </div>
+         <div><label for="atend-origem" class="block text-sm font-semibold text-gray-700 mb-2">Origem do Receituário</label> <input type="text" id="atend-origem" placeholder="Ex: WhatsApp, Instagram..." required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+         </div>
+         <div class="relative"><label for="atend-cliente" class="block text-sm font-semibold text-gray-700 mb-2">Buscar Cliente</label> <input type="text" id="atend-cliente" placeholder="Digite o nome do cliente..." oninput="buscarClienteAtendimento()" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+          <div id="cliente-sugestoes" class="absolute z-10 w-full bg-white border-2 border-gray-200 rounded-xl mt-1 hidden max-h-48 overflow-y-auto shadow-lg"></div>
+         </div>
+         <div class="md:col-span-2"><label for="atend-prescricao" class="block text-sm font-semibold text-gray-700 mb-2">Prescrição</label> <textarea id="atend-prescricao" rows="4" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"></textarea>
+         </div>
+         <div class="md:col-span-2"><button type="submit" class="btn-primary text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg"> Registrar Atendimento </button>
+         </div>
+        </form>
+       </div><!-- Status dos Atendimentos -->
+       <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #3B82F6; --color-to: #2563EB;">
+         <p class="text-blue-100 text-sm mb-2 font-semibold">🔄 Em Andamento</p>
+         <p id="status-atend-andamento" class="text-4xl font-bold">0</p>
+        </div>
+        <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #F59E0B; --color-to: #D97706;">
+         <p class="text-orange-100 text-sm mb-2 font-semibold">⏳ Aguardando</p>
+         <p id="status-atend-aguardando" class="text-4xl font-bold">0</p>
+        </div>
+        <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #10B981; --color-to: #059669;">
+         <p class="text-green-100 text-sm mb-2 font-semibold">✅ Confirmados</p>
+         <p id="status-atend-confirmados" class="text-4xl font-bold">0</p>
+        </div>
+        <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #8B5CF6; --color-to: #7C3AED;">
+         <p class="text-purple-100 text-sm mb-2 font-semibold">🎉 Finalizados</p>
+         <p id="status-atend-finalizados" class="text-4xl font-bold">0</p>
+        </div>
+        <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #EF4444; --color-to: #DC2626;">
+         <p class="text-red-100 text-sm mb-2 font-semibold">❌ Não Respondidas</p>
+         <p id="status-atend-nao-respondidas" class="text-4xl font-bold">0</p>
+        </div>
+       </div><!-- Lista de Atendimentos -->
+       <div class="card bg-white rounded-2xl shadow-lg p-6 md:p-8">
+        <h3 class="text-2xl font-bold text-gray-800 mb-6">Todos os Atendimentos</h3><!-- Busca e Filtros -->
+        <div class="mb-6">
+         <div class="mb-4"><input type="text" id="busca-atendimento" placeholder="🔍 Buscar por cliente, origem ou prescrição..." oninput="renderAtendimentos()" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none">
+         </div>
+         <div class="flex flex-wrap gap-2"><button onclick="filtrarAtendimentos('todos')" id="filtro-atend-todos" class="px-4 py-2 rounded-lg font-semibold transition bg-green-600 text-white">Todos</button> <button onclick="filtrarAtendimentos('aguardando')" id="filtro-atend-aguardando" class="px-4 py-2 rounded-lg font-semibold transition bg-gray-200 text-gray-700 hover:bg-gray-300">⏳ Aguardando</button> <button onclick="filtrarAtendimentos('confirmado')" id="filtro-atend-confirmado" class="px-4 py-2 rounded-lg font-semibold transition bg-gray-200 text-gray-700 hover:bg-gray-300">✅ Confirmado</button> <button onclick="filtrarAtendimentos('finalizado')" id="filtro-atend-finalizado" class="px-4 py-2 rounded-lg font-semibold transition bg-gray-200 text-gray-700 hover:bg-gray-300">🎉 Finalizado</button> <button onclick="filtrarAtendimentos('nao_respondida')" id="filtro-atend-nao-respondida" class="px-4 py-2 rounded-lg font-semibold transition bg-gray-200 text-gray-700 hover:bg-gray-300">❌ Não Respondida</button>
+         </div>
+        </div>
+        <div class="table-container">
+         <table class="min-w-full">
+          <thead>
+           <tr class="border-b-2 border-gray-200">
+            <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Data</th>
+            <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Horário</th>
+            <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Origem</th>
+            <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Cliente</th>
+            <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Telefone</th>
+            <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Status</th>
+            <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Prescrição</th>
+            <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Ações</th>
+           </tr>
+          </thead>
+          <tbody id="atendimentos-list">
+           <tr>
+            <td colspan="8" class="px-4 py-12 text-center text-gray-500">
+             <div class="flex flex-col items-center gap-3"><span class="text-5xl opacity-20">🔄</span> <span>Nenhum atendimento cadastrado</span>
+             </div></td>
+           </tr>
+          </tbody>
+         </table>
+        </div>
+       </div>
+      </div>
+     </div><!-- Módulo Caixa -->
+     <div id="module-caixa" class="module-content hidden"><!-- Status Badge do Caixa -->
+      <div class="mb-6">
+       <div class="card bg-white rounded-2xl shadow-lg p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+         <div class="px-6 py-3 rounded-xl font-bold text-lg shadow-lg bg-green-600 text-white">
+          🔓 CAIXA ABERTO
+         </div>
+         <div class="text-left">
+          <p class="text-sm text-gray-600" id="info-valor-inicial">Nenhum valor registrado hoje</p>
+          <p class="text-lg font-bold text-gray-800" id="info-horario-inicial">--:--</p>
+         </div>
+        </div>
+        <div class="flex gap-3"><button id="btn-vendas" onclick="abrirPainelVendas()" class="btn-info text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg"> 🛒 VENDAS </button>
+        </div>
+       </div>
+      </div><!-- Tabs de Caixa -->
+      <div class="card bg-white rounded-2xl shadow-lg p-4 mb-6">
+       <div class="flex flex-wrap gap-2 items-center justify-between">
+        <div class="flex gap-2"><button onclick="mudarAbaCaixa('controle')" id="tab-caixa-controle" class="tab-gerenciamento active"> ⚙️ Controle de Caixa </button>
+        </div><button onclick="abrirModalValorInicial()" id="btn-fechar-caixa" class="btn-primary text-white px-6 py-3 rounded-xl font-bold shadow-lg"> 💵 Registrar Valor do Dia </button>
+       </div>
+      </div><!-- Conteúdo Controle de Caixa -->
+      <div id="caixa-content-controle" class="caixa-content"><!-- Controle de Navegação de Data -->
+       <div class="card bg-white rounded-2xl shadow-lg p-6 mb-6">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+         <div class="flex flex-col items-center">
+          <p class="text-sm font-semibold text-gray-600 mb-2">📅 Visualizar Data</p>
+          <p id="data-selecionada-display" class="text-3xl font-bold text-gray-800">17/01/2026</p>
+         </div>
+         <div class="flex items-center gap-3"><button onclick="mudarDiaCaixa(-1)" class="btn-secondary text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:bg-gray-700 transition"> Dia Anterior </button> <button onclick="irParaHoje()" class="btn-info text-white px-6 py-3 rounded-xl font-semibold shadow-lg"> 📍 Hoje </button> <button onclick="mudarDiaCaixa(1)" class="btn-secondary text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:bg-gray-700 transition"> Proximo Dia </button>
+         </div>
+        </div>
+       </div><!-- Cards de Dashboard -->
+       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
+        <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #10B981; --color-to: #059669;">
+         <p class="text-green-100 text-sm mb-2 font-semibold">💵 Vendas do Dia</p>
+         <p id="dash-vendas-dia" class="text-4xl font-bold">R$ 0,00</p>
+        </div>
+        <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #3B82F6; --color-to: #2563EB;">
+         <p class="text-blue-100 text-sm mb-2 font-semibold">💰 Entradas do Dia</p>
+         <p id="dash-entradas-dia" class="text-4xl font-bold">R$ 0,00</p>
+        </div>
+        <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #EF4444; --color-to: #DC2626;">
+         <p class="text-red-100 text-sm mb-2 font-semibold">💸 Saídas do Dia</p>
+         <p id="dash-saidas-dia" class="text-4xl font-bold">R$ 0,00</p>
+        </div>
+        <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #8B5CF6; --color-to: #7C3AED;">
+         <p class="text-purple-100 text-sm mb-2 font-semibold">💼 Saldo do Dia</p>
+         <p id="dash-caixa-atual" class="text-4xl font-bold">R$ 0,00</p>
+        </div>
+        <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #F59E0B; --color-to: #D97706;">
+         <p class="text-orange-100 text-sm mb-2 font-semibold">📊 Acumulado Mês</p>
+         <p id="dash-saldo-total" class="text-4xl font-bold">R$ 0,00</p>
+        </div>
+       </div><!-- Form Nova Transação -->
+       <div class="card bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-6">
+        <h3 class="text-2xl font-bold text-gray-800 mb-6">+ Nova Transação</h3>
+        <form id="form-transacao" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+         <div><label for="trans-data" class="block text-sm font-semibold text-gray-700 mb-2">Data da Transação</label> <input type="date" id="trans-data" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+         </div>
+         <div><label for="trans-tipo" class="block text-sm font-semibold text-gray-700 mb-2">Tipo de Transação</label> <select id="trans-tipo" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"> <option value="">Selecione...</option> <option value="entrada">💵 Entrada</option> <option value="saida">💸 Saída</option> </select>
+         </div>
+         <div><label for="trans-categoria" class="block text-sm font-semibold text-gray-700 mb-2">Categoria</label> <select id="trans-categoria" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"> <option value="">Selecione...</option> <optgroup label="Entradas"> <option value="venda">Venda de Produtos</option> <option value="servico">Serviços</option> <option value="outras-entradas">Outras Entradas</option> </optgroup> <optgroup label="Saídas"> <option value="compra-produtos">Compra de Produtos</option> <option value="salarios">Salários</option> <option value="aluguel">Aluguel</option> <option value="energia">Energia</option> <option value="agua">Água</option> <option value="internet">Internet</option> <option value="telefone">Telefone</option> <option value="impostos">Impostos</option> <option value="manutencao">Manutenção</option> <option value="outras-saidas">Outras Saídas</option> </optgroup> </select>
+         </div>
+         <div><label for="trans-valor" class="block text-sm font-semibold text-gray-700 mb-2">Valor (R$)</label> <input type="number" id="trans-valor" step="0.01" min="0" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+         </div>
+         <div class="md:col-span-2"><label for="trans-descricao" class="block text-sm font-semibold text-gray-700 mb-2">Descrição</label> <textarea id="trans-descricao" rows="3" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"></textarea>
+         </div>
+         <div><label for="trans-forma-pagamento" class="block text-sm font-semibold text-gray-700 mb-2">Forma de Pagamento</label> <select id="trans-forma-pagamento" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"> <option value="">Selecione...</option> <option value="dinheiro">💵 Dinheiro</option> <option value="pix">📱 PIX</option> <option value="cartao-debito">💳 Cartão de Débito</option> <option value="cartao-credito">💳 Cartão de Crédito</option> <option value="transferencia">🏦 Transferência</option> <option value="boleto">📄 Boleto</option> </select>
+         </div>
+         <div class="md:col-span-2"><button type="submit" class="btn-primary text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg"> Registrar Transação </button>
+         </div>
+        </form>
+       </div><!-- Gráficos de Análise -->
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"><!-- Gráfico Formas de Pagamento -->
+        <div class="card bg-white rounded-2xl shadow-lg p-6">
+         <h3 class="text-xl font-bold text-gray-800 mb-4">📊 Formas de Pagamento</h3>
+         <div class="flex items-center justify-center">
+          <canvas id="grafico-formas-pagamento" width="300" height="300"></canvas>
+         </div>
+         <div id="legenda-formas-pagamento" class="mt-4 space-y-2"></div>
+        </div><!-- Ranking Produtos Mais Vendidos -->
+        <div class="card bg-white rounded-2xl shadow-lg p-6">
+         <h3 class="text-xl font-bold text-gray-800 mb-4">🏆 Produtos Mais Vendidos</h3>
+         <div id="ranking-produtos-vendidos" class="space-y-3"></div>
+        </div>
+       </div><!-- Lista de Transações -->
+       <div class="card bg-white rounded-2xl shadow-lg p-6 md:p-8">
+        <h3 class="text-2xl font-bold text-gray-800 mb-6">Todas as Transações</h3><!-- Filtros -->
+        <div class="mb-6">
+         <div class="flex flex-wrap gap-2 mb-4"><button onclick="filtrarTransacoes('todas')" id="filtro-trans-todas" class="px-4 py-2 rounded-lg font-semibold transition bg-green-600 text-white">Todas</button> <button onclick="filtrarTransacoes('entrada')" id="filtro-trans-entrada" class="px-4 py-2 rounded-lg font-semibold transition bg-gray-200 text-gray-700 hover:bg-gray-300"> Entradas</button> <button onclick="filtrarTransacoes('saida')" id="filtro-trans-saida" class="px-4 py-2 rounded-lg font-semibold transition bg-gray-200 text-gray-700 hover:bg-gray-300">💸 Saídas</button>
+         </div>
+         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div><label class="block text-sm font-semibold text-gray-700 mb-2">Data Início</label> <input type="date" id="filtro-data-inicio" onchange="aplicarFiltroDatas()" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none">
+          </div>
+          <div><label class="block text-sm font-semibold text-gray-700 mb-2">Data Fim</label> <input type="date" id="filtro-data-fim" onchange="aplicarFiltroDatas()" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none">
+          </div>
+          <div class="flex items-end"><button onclick="limparFiltros()" class="btn-secondary text-white px-6 py-3 rounded-xl font-semibold w-full">Limpar Filtros</button>
+          </div>
+         </div>
+        </div>
+        <div class="table-container">
+         <table class="min-w-full">
+          <thead>
+           <tr class="border-b-2 border-gray-200">
+            <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Data</th>
+            <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Tipo</th>
+            <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Categoria</th>
+            <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Descrição</th>
+            <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Forma Pagamento</th>
+            <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Valor</th>
+            <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">Ações</th>
+           </tr>
+          </thead>
+          <tbody id="transacoes-list">
+           <tr>
+            <td colspan="7" class="px-4 py-12 text-center text-gray-500">
+             <div class="flex flex-col items-center gap-3"><span class="text-5xl opacity-20">💰</span> <span>Nenhuma transação registrada</span>
+             </div></td>
+           </tr>
+          </tbody>
+         </table>
+        </div>
+       </div>
+      </div>
+     </div><!-- Modal Valor Inicial -->
+     <div id="modal-valor-inicial" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+       <div class="bg-gradient-to-r from-green-700 to-green-900 text-white p-6 rounded-t-2xl flex justify-between items-center">
+        <h2 id="modal-valor-titulo" class="text-2xl font-bold">💵 Registrar Valor do Dia</h2><button onclick="fecharModalValorInicial()" class="text-white text-3xl hover:text-red-300 transition">✕</button>
+       </div>
+       <form id="form-valor-inicial" class="p-6 space-y-6">
+        <div><label for="valor-inicial-data" class="block text-sm font-semibold text-gray-700 mb-2">Data</label> <input type="date" id="valor-inicial-data" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+        </div>
+        <div><label for="valor-inicial-valor" id="label-valor-inicial" class="block text-sm font-semibold text-gray-700 mb-2">Valor do Caixa (R$)</label> <input type="number" id="valor-inicial-valor" step="0.01" min="0" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+        </div>
+        <div><label for="valor-inicial-obs" class="block text-sm font-semibold text-gray-700 mb-2">Observações (opcional)</label> <textarea id="valor-inicial-obs" rows="3" placeholder="Ex: Dinheiro do dia anterior, troco do cofre..." class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"></textarea>
+        </div>
+        <div class="flex gap-3"><button type="button" onclick="fecharModalValorInicial()" class="btn-secondary text-white px-6 py-3 rounded-xl font-semibold flex-1">X</button> <button type="submit" id="btn-submit-valor" class="btn-primary text-white px-6 py-3 rounded-xl font-semibold flex-1">Registrar</button>
+        </div>
+       </form>
+      </div>
+     </div><!-- Modal Opções de Backup -->
+     <div id="modal-opcoes-backup" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+       <div class="bg-gradient-to-r from-green-700 to-green-900 text-white p-6 rounded-t-2xl flex justify-between items-center sticky top-0 z-10">
+        <h2 class="text-2xl font-bold">💾 Opções de Backup</h2><button onclick="fecharOpcoesBackup()" class="text-white text-3xl hover:text-red-300 transition">✕</button>
+       </div>
+       <div class="p-6 space-y-6"><!-- Backup Completo -->
+        <div class="border-2 border-green-200 rounded-xl p-4 bg-green-50">
+         <h3 class="font-bold text-gray-800 mb-3 text-lg">🗂️ Backup Completo</h3>
+         <div class="space-y-2"><button onclick="baixarBackup('todos')" class="w-full btn-primary text-white px-6 py-3 rounded-xl font-bold text-left flex items-center justify-between hover:bg-green-700 transition"> <span>📊 Todos os Dados</span> <span class="text-sm opacity-80">Backup completo do sistema</span> </button> <button onclick="baixarBackup('ultimos7dias')" class="w-full btn-info text-white px-6 py-3 rounded-xl font-bold text-left flex items-center justify-between hover:bg-blue-700 transition"> <span>📅 Últimos 7 Dias</span> <span class="text-sm opacity-80">Dados recentes</span> </button>
+         </div>
+        </div><!-- Backup por Categoria -->
+        <div class="border-2 border-blue-200 rounded-xl p-4 bg-blue-50">
+         <h3 class="font-bold text-gray-800 mb-3 text-lg">📂 Backup por Categoria</h3>
+         <div class="grid grid-cols-1 md:grid-cols-2 gap-3"><button onclick="baixarBackupCategoria('produtos')" class="bg-white border-2 border-gray-300 hover:border-green-600 text-gray-800 px-4 py-3 rounded-xl font-semibold text-left flex items-center gap-3 transition hover:bg-green-50"> <span class="text-2xl">📦</span> <span>Produtos</span> </button> <button onclick="baixarBackupCategoria('clientes')" class="bg-white border-2 border-gray-300 hover:border-green-600 text-gray-800 px-4 py-3 rounded-xl font-semibold text-left flex items-center gap-3 transition hover:bg-green-50"> <span class="text-2xl">👥</span> <span>Clientes</span> </button> <button onclick="baixarBackupCategoria('atendimentos')" class="bg-white border-2 border-gray-300 hover:border-green-600 text-gray-800 px-4 py-3 rounded-xl font-semibold text-left flex items-center gap-3 transition hover:bg-green-50"> <span class="text-2xl">🔄</span> <span>Atendimentos</span> </button> <button onclick="baixarBackupCategoria('transacoes')" class="bg-white border-2 border-gray-300 hover:border-green-600 text-gray-800 px-4 py-3 rounded-xl font-semibold text-left flex items-center gap-3 transition hover:bg-green-50"> <span class="text-2xl">💰</span> <span>Transações</span> </button>
+         </div>
+        </div><!-- Período Personalizado -->
+        <div class="border-2 border-purple-200 rounded-xl p-4 bg-purple-50">
+         <h3 class="font-bold text-gray-800 mb-3 text-lg">Periodo Personalizado</h3>
+         <div class="space-y-3">
+          <div><label class="block text-sm font-semibold text-gray-700 mb-1">Data Início</label> <input type="date" id="backup-data-inicio" class="form-input w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-sm">
+          </div>
+          <div><label class="block text-sm font-semibold text-gray-700 mb-1">Data Fim</label> <input type="date" id="backup-data-fim" class="form-input w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-sm">
+          </div><button onclick="baixarBackupPersonalizado()" class="w-full bg-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-purple-700 transition"> 🔍 Baixar Período Personalizado </button>
+         </div>
+        </div><button onclick="fecharOpcoesBackup()" class="w-full btn-secondary text-white px-6 py-3 rounded-xl font-semibold"> X </button>
+       </div>
+      </div>
+     </div><!-- Modal Painel de Vendas -->
+     <div id="modal-vendas" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden overflow-y-auto">
+      <div class="min-h-screen px-4 py-8">
+       <div class="bg-gray-50 rounded-2xl shadow-2xl max-w-7xl mx-auto"><!-- Header do Modal -->
+        <div class="bg-gradient-to-r from-green-700 to-green-900 text-white p-6 rounded-t-2xl flex justify-between items-center">
+         <div class="flex items-center gap-4"><button onclick="fecharPainelVendas()" class="text-white text-lg hover:bg-green-800 px-4 py-2 rounded-lg transition font-semibold"> ← Voltar ao Dashboard </button>
+          <h2 class="text-3xl font-bold">🛒 Painel de Vendas</h2>
+         </div><button onclick="fecharPainelVendas()" class="text-white text-3xl hover:text-red-300 transition">X</button>
+        </div><!-- Conteúdo do Painel de Vendas -->
+        <div id="conteudo-vendas" class="p-6">
+         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><!-- Coluna Esquerda: Busca e Produtos -->
+          <div class="lg:col-span-2 space-y-6"><!-- Busca de Produtos -->
+           <div class="card bg-white rounded-2xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">🔍 Buscar Produtos</h3><input type="text" id="busca-produto-venda" placeholder="Digite o nome do produto..." oninput="buscarProdutosVenda()" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none">
+           </div><!-- Lista de Produtos Disponíveis -->
+           <div class="card bg-white rounded-2xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">📦 Produtos Disponíveis</h3>
+            <div id="lista-produtos-venda" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+             <div class="col-span-2 text-center text-gray-500 py-8"><span class="text-4xl opacity-20">📦</span>
+              <p class="mt-2">Nenhum produto disponível</p>
+             </div>
+            </div>
+           </div>
+          </div><!-- Coluna Direita: Carrinho -->
+          <div class="lg:col-span-1">
+           <div class="card bg-white rounded-2xl shadow-lg p-6 sticky top-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">🛒 Carrinho</h3>
+            <div id="carrinho-items" class="space-y-3 mb-6 max-h-64 overflow-y-auto">
+             <div class="text-center text-gray-400 py-8"><span class="text-4xl opacity-20">🛒</span>
+              <p class="mt-2 text-sm">Carrinho vazio</p>
+             </div>
+            </div><!-- Totalizador -->
+            <div class="border-t-2 border-gray-200 pt-4 space-y-3">
+             <div class="flex justify-between text-gray-700"><span class="font-semibold">Subtotal:</span> <span id="carrinho-subtotal" class="font-bold">R$ 0,00</span>
+             </div>
+             <div class="flex justify-between items-center"><span class="font-semibold text-gray-700">Desconto (%):</span> <input type="number" id="carrinho-desconto" min="0" max="100" value="0" step="1" oninput="atualizarTotalizador()" class="w-20 px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-center">
+             </div>
+             <div class="flex justify-between text-xl font-bold text-green-600"><span>TOTAL:</span> <span id="carrinho-total">R$ 0,00</span>
+             </div>
+            </div><!-- Forma de Pagamento -->
+            <div class="mt-4"><label class="block text-sm font-semibold text-gray-700 mb-2">Forma de Pagamento</label> <select id="forma-pagamento-venda" onchange="verificarPagamentoMisto()" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none"> <option value="">Selecione...</option> <option value="dinheiro">💵 Dinheiro</option> <option value="pix">📱 PIX</option> <option value="cartao-debito">💳 Cartão de Débito</option> <option value="cartao-credito">💳 Cartão de Crédito</option> <option value="misto">🔀 Pagamento Misto</option> </select>
+            </div><!-- Campos de Pagamento Misto (oculto inicialmente) -->
+            <div id="campos-pagamento-misto" class="mt-4 space-y-3 hidden">
+             <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+              <p class="text-blue-800 font-semibold text-sm mb-3">💡 Divida o pagamento em até 3 formas diferentes</p><!-- Forma 1 -->
+              <div class="mb-3"><label class="block text-xs font-semibold text-gray-700 mb-1">Forma 1</label>
+               <div class="grid grid-cols-2 gap-2"><select id="misto-forma1" class="form-input px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-sm"> <option value="">Selecione...</option> <option value="dinheiro">💵 Dinheiro</option> <option value="pix">📱 PIX</option> <option value="cartao-debito">💳 Débito</option> <option value="cartao-credito">💳 Crédito</option> </select> <input type="number" id="misto-valor1" placeholder="R$ 0,00" step="0.01" min="0" class="form-input px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-sm">
+               </div>
+              </div><!-- Forma 2 -->
+              <div class="mb-3"><label class="block text-xs font-semibold text-gray-700 mb-1">Forma 2</label>
+               <div class="grid grid-cols-2 gap-2"><select id="misto-forma2" class="form-input px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-sm"> <option value="">Selecione...</option> <option value="dinheiro">💵 Dinheiro</option> <option value="pix">📱 PIX</option> <option value="cartao-debito">💳 Débito</option> <option value="cartao-credito">💳 Crédito</option> </select> <input type="number" id="misto-valor2" placeholder="R$ 0,00" step="0.01" min="0" class="form-input px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-sm">
+               </div>
+              </div><!-- Forma 3 (opcional) -->
+              <div class="mb-3"><label class="block text-xs font-semibold text-gray-700 mb-1">Forma 3 (opcional)</label>
+               <div class="grid grid-cols-2 gap-2"><select id="misto-forma3" class="form-input px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-sm"> <option value="">Selecione...</option> <option value="dinheiro">💵 Dinheiro</option> <option value="pix">📱 PIX</option> <option value="cartao-debito">💳 Débito</option> <option value="cartao-credito">💳 Crédito</option> </select> <input type="number" id="misto-valor3" placeholder="R$ 0,00" step="0.01" min="0" class="form-input px-3 py-2 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-sm">
+               </div>
+              </div>
+              <div class="mt-3 pt-3 border-t border-blue-300">
+               <div class="flex justify-between text-sm"><span class="text-gray-700 font-semibold">Total a Pagar:</span> <span id="misto-total-pagar" class="font-bold text-green-600">R$ 0,00</span>
+               </div>
+               <div class="flex justify-between text-sm mt-1"><span class="text-gray-700 font-semibold">Total Informado:</span> <span id="misto-total-informado" class="font-bold text-blue-600">R$ 0,00</span>
+               </div>
+               <div id="misto-diferenca" class="text-xs mt-2 text-center font-semibold"></div>
+              </div>
+             </div>
+            </div><!-- Botões de Ação -->
+            <div class="mt-6 space-y-3"><button id="btn-finalizar-venda" onclick="finalizarVenda()" class="btn-primary text-white px-6 py-4 rounded-xl font-bold text-lg w-full shadow-lg"> ✓ Finalizar Venda </button> <button onclick="limparCarrinho()" class="btn-secondary text-white px-6 py-3 rounded-xl font-semibold w-full"> 🗑️ Limpar Carrinho </button>
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </main>
+  </div><!-- Input file oculto para importação --> <input type="file" id="file-input-backup" accept=".json" style="display: none;" onchange="importarBackup(event)">
+  <script>
+    // ===== SISTEMA DE ARMAZENAMENTO LOCAL =====
+    const STORAGE_KEY = 'medicbio_erp_data';
+    let allData = [];
+    let nextId = 1;
+    
+    function carregarDados() {
+      try {
+        const dados = localStorage.getItem(STORAGE_KEY);
+        if (dados) {
+          const parsed = JSON.parse(dados);
+          allData = parsed.data || [];
+          nextId = parsed.nextId || 1;
+          console.log('✅ Dados carregados do localStorage:', allData.length, 'registros');
+        }
+      } catch (error) {
+        console.error('❌ Erro ao carregar dados:', error);
+        allData = [];
+        nextId = 1;
+      }
+    }
+    
+    function salvarDados() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          data: allData,
+          nextId: nextId,
+          lastUpdate: new Date().toISOString()
+        }));
+        console.log('✅ Dados salvos no localStorage:', allData.length, 'registros');
+      } catch (error) {
+        console.error(' Erro ao salvar dados:', error);
+        showToast('❌ Erro ao salvar dados', 'error');
+      }
+    }
+    
+    function criarRegistro(dados) {
+      const novoRegistro = {
+        ...dados,
+        __backendId: 'ID_' + nextId++,
+        __createdAt: new Date().toISOString()
+      };
+      allData.push(novoRegistro);
+      salvarDados();
+      atualizarUI();
+      return novoRegistro;
+    }
+    
+    function atualizarRegistro(registro) {
+      const index = allData.findIndex(item => item.__backendId === registro.__backendId);
+      if (index !== -1) {
+        allData[index] = {...registro, __updatedAt: new Date().toISOString()};
+        salvarDados();
+        atualizarUI();
+        return true;
+      }
+      return false;
+    }
+    
+    function deletarRegistro(registro) {
+      const index = allData.findIndex(item => item.__backendId === registro.__backendId);
+      if (index !== -1) {
+        allData.splice(index, 1);
+        salvarDados();
+        atualizarUI();
+        return true;
+      }
+      return false;
+    }
+    
+    function atualizarUI() {
+      renderProdutos();
+      atualizarStatusProdutos();
+      renderClientes();
+      atualizarStatusClientes();
+      renderAtendimentos();
+      atualizarStatusAtendimentos();
+      atualizarDashboardCaixa();
+      renderTransacoes();
+      renderProdutosVenda();
+      renderGraficos();
+    }
+
+    function abrirOpcoesBaixarBackup() {
+      document.getElementById('modal-opcoes-backup').classList.remove('hidden');
+      const hoje = new Date().toISOString().split('T')[0];
+      document.getElementById('backup-data-fim').value = hoje;
+    }
+    
+    function fecharOpcoesBackup() {
+      document.getElementById('modal-opcoes-backup').classList.add('hidden');
+      document.getElementById('backup-data-inicio').value = '';
+      document.getElementById('backup-data-fim').value = '';
+    }
+
+    function baixarBackup(periodo) {
+      try {
+        let dadosFiltrados = [...allData];
+        let descricaoPeriodo = 'completo';
+        
+        if (periodo === 'ultimos7dias') {
+          const hoje = new Date();
+          const seteDiasAtras = new Date();
+          seteDiasAtras.setDate(hoje.getDate() - 7);
+          const dataLimite = seteDiasAtras.toISOString().split('T')[0];
+          
+          dadosFiltrados = allData.filter(item => {
+            if (item.data && item.data >= dataLimite) return true;
+            if (item.data_cadastro && item.data_cadastro >= dataLimite) return true;
+            if (item.__createdAt && item.__createdAt.split('T')[0] >= dataLimite) return true;
+            return false;
+          });
+          
+          descricaoPeriodo = 'ultimos_7_dias';
+        }
+        
+        const backupData = {
+          versao: '2.0',
+          dataExportacao: new Date().toISOString(),
+          periodo: descricaoPeriodo,
+          totalRegistros: dadosFiltrados.length,
+          data: dadosFiltrados,
+          nextId: nextId
+        };
+        
+        const dataStr = JSON.stringify(backupData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `medicbio_backup_${descricaoPeriodo}_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        fecharOpcoesBackup();
+        showToast('✅ Backup baixado com sucesso!', 'success');
+      } catch (error) {
+        console.error('❌ Erro ao gerar backup:', error);
+        showToast('❌ Erro ao gerar backup', 'error');
+      }
+    }
+    
+    function baixarBackupCategoria(categoria) {
+      try {
+        let dadosFiltrados = [];
+        let nomeCategoria = '';
+        
+        switch(categoria) {
+          case 'produtos':
+            dadosFiltrados = allData.filter(item => item.tipo === 'produto');
+            nomeCategoria = 'produtos';
+            break;
+          case 'clientes':
+            dadosFiltrados = allData.filter(item => item.tipo === 'cliente');
+            nomeCategoria = 'clientes';
+            break;
+          case 'atendimentos':
+            dadosFiltrados = allData.filter(item => item.tipo === 'atendimento');
+            nomeCategoria = 'atendimentos';
+            break;
+          case 'transacoes':
+            dadosFiltrados = allData.filter(item => item.tipo === 'transacao' || item.tipo === 'valor_inicial');
+            nomeCategoria = 'transacoes';
+            break;
+          default:
+            dadosFiltrados = allData;
+            nomeCategoria = 'todos';
+        }
+        
+        if (dadosFiltrados.length === 0) {
+          showToast(`⚠️ Nenhum registro encontrado para ${nomeCategoria}`, 'error');
+          return;
+        }
+        
+        const backupData = {
+          versao: '2.0',
+          dataExportacao: new Date().toISOString(),
+          categoria: nomeCategoria,
+          totalRegistros: dadosFiltrados.length,
+          data: dadosFiltrados,
+          nextId: nextId
+        };
+        
+        const dataStr = JSON.stringify(backupData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `medicbio_${nomeCategoria}_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        fecharOpcoesBackup();
+        showToast(`✅ Backup de ${nomeCategoria} baixado! (${dadosFiltrados.length} registros)`, 'success');
+      } catch (error) {
+        console.error('❌ Erro ao gerar backup:', error);
+        showToast('❌ Erro ao gerar backup', 'error');
+      }
+    }
+    
+    function baixarBackupPersonalizado() {
+      const dataInicio = document.getElementById('backup-data-inicio').value;
+      const dataFim = document.getElementById('backup-data-fim').value;
+      
+      if (!dataInicio || !dataFim) {
+        showToast('⚠️ Selecione as datas de início e fim', 'error');
+        return;
+      }
+      
+      if (dataInicio > dataFim) {
+        showToast('⚠️ Data de início não pode ser maior que data fim', 'error');
+        return;
+      }
+      
+      try {
+        const dadosFiltrados = allData.filter(item => {
+          if (item.data && item.data >= dataInicio && item.data <= dataFim) return true;
+          if (item.data_cadastro && item.data_cadastro >= dataInicio && item.data_cadastro <= dataFim) return true;
+          if (item.__createdAt) {
+            const dataCriacao = item.__createdAt.split('T')[0];
+            return dataCriacao >= dataInicio && dataCriacao <= dataFim;
+          }
+          return false;
+        });
+        
+        const backupData = {
+          versao: '2.0',
+          dataExportacao: new Date().toISOString(),
+          periodo: `${dataInicio}_ate_${dataFim}`,
+          totalRegistros: dadosFiltrados.length,
+          data: dadosFiltrados,
+          nextId: nextId
+        };
+        
+        const dataStr = JSON.stringify(backupData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `medicbio_backup_${dataInicio}_ate_${dataFim}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        fecharOpcoesBackup();
+        showToast('✅ Backup personalizado baixado!', 'success');
+      } catch (error) {
+        console.error('❌ Erro ao gerar backup:', error);
+        showToast('❌ Erro ao gerar backup', 'error');
+      }
+    }
+    
+    function abrirImportacao() {
+      document.getElementById('file-input-backup').click();
+    }
+    
+    function importarBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const backupData = JSON.parse(e.target.result);
+
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+      modal.innerHTML = `
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+          <h3 class="text-2xl font-bold mb-4 text-gray-800">📂 Importar Backup</h3>
+          <p class="text-gray-600 mb-2">Total de registros no arquivo: <strong>${backupData.totalRegistros || (backupData.data ? backupData.data.length : 0)}</strong></p>
+          <p class="text-gray-600 mb-4">Período: <strong>${backupData.periodo || 'N/A'}</strong></p>
+          <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-6">
+            <p class="text-blue-800 font-semibold text-sm">ℹ️ Modo de Importação Inteligente:</p>
+            <ul class="text-blue-700 text-xs mt-2 space-y-1 list-disc list-inside">
+              <li>Dados novos serão adicionados</li>
+              <li>Dados existentes serão ignorados</li>
+              <li>Seus dados atuais serão preservados</li>
+            </ul>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="this.closest('.fixed').remove()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl flex-1 font-semibold transition-colors">X</button>
+            <button id="btnConfirmarImportar" class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl flex-1 font-semibold transition-colors">📥 Importar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      // Listener para o botão importar (forma mais segura de passar o objeto backupData)
+      document.getElementById('btnConfirmarImportar').addEventListener('click', function() {
+        confirmarImportacao(backupData);
+        modal.remove(); // Fecha a janela ao clicar
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao importar:', error);
+      showToast('❌ Arquivo inválido', 'error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function confirmarImportacao(backupData) {
+  try {
+    const dadosNovos = backupData.data || [];
+    let adicionados = 0;
+    let ignorados = 0;
+
+    const idsExistentes = new Set(allData.map(item => item.__backendId));
+
+    dadosNovos.forEach(novoItem => {
+      if (!idsExistentes.has(novoItem.__backendId)) {
+        allData.push(novoItem);
+        adicionados++;
+
+        const idNumerico = parseInt(novoItem.__backendId.replace('ID_', ''));
+        if (!isNaN(idNumerico) && idNumerico >= nextId) {
+          nextId = idNumerico + 1;
+        }
+      } else {
+        ignorados++;
+      }
+    });
+
+    salvarDados();
+    atualizarUI();
+
+    // Notificação de SUCESSO em VERDE
+    showToast(`✅ Importação realizada com sucesso! ${adicionados} itens adicionados.`, 'success');
+
+  } catch (error) {
+    console.error('❌ Erro ao importar backu:', error);
+    showToast(`✅ Importação realizada com sucesso! ${adicionados} itens adicionados.`, 'success');
+  }
+}
+    function confirmarLimparDados() {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+      modal.innerHTML = `
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+          <h3 class="text-2xl font-bold mb-4 text-red-600">⚠️ ATENÇÃO - CONFIRMAR EXCLUSÃO</h3>
+          <p class="text-gray-700 font-semibold mb-4">Esta ação irá DELETAR permanentemente:</p>
+          <ul class="text-gray-600 mb-6 space-y-2 list-disc list-inside">
+            <li>Todos os produtos cadastrados</li>
+            <li>Todos os clientes cadastrados</li>
+            <li>Todos os atendimentos</li>
+            <li>Todas as transações de caixa</li>
+            <li>Todo o histórico do sistema</li>
+          </ul>
+          <p class="text-red-600 font-bold mb-6 text-center">⚠️ ESTA AÇÃO NÃO PODE SER DESFEITA! ⚠️</p>
+          <div class="flex gap-3">
+            <button onclick="this.closest('.fixed').remove()" class="btn-secondary text-white px-6 py-3 rounded-xl flex-1 font-semibold">X</button>
+            <button onclick="executarLimparDados()" class="btn-danger text-white px-6 py-3 rounded-xl flex-1 font-semibold"> LIMPAR TUDO</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+    
+    function executarLimparDados() {
+      try {
+        allData = [];
+        nextId = 1;
+        localStorage.removeItem(STORAGE_KEY);
+        console.log('✅ Todos os dados foram apagados');
+        
+        atualizarUI();
+        document.querySelectorAll('.fixed.inset-0').forEach(el => el.remove());
+        showToast('✅ Todos os dados foram limpos com sucesso!', 'success');
+      } catch (error) {
+        console.error('❌ Erro ao limpar dados:', error);
+        showToast('❌ Erro ao limpar dados', 'error');
+      }
+    }
+
+    let filtroTransacaoAtual = 'todas';
+    let filtroProdutoAtual = 'todos';
+    let filtroAtendimentoAtual = 'todos';
+    let clienteSelecionadoAtendimento = null;
+    let carrinhoVendas = [];
+    let produtoEmEdicao = null;
+    let clienteEmEdicao = null;
+    let dataSelecionadaCaixa = new Date();
+    let vendaEmProcessamento = false;
+
+    function showToast(message, type) {
+      const toast = document.createElement('div');
+      toast.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-xl shadow-2xl text-white font-semibold text-sm ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    function init() {
+      carregarDados();
+      const hoje = new Date().toISOString().split('T')[0];
+      document.getElementById('produto-validade').value = hoje;
+      document.getElementById('cliente-data-cadastro').value = hoje;
+      document.getElementById('atend-data').value = hoje;
+      document.getElementById('trans-data').value = hoje;
+      dataSelecionadaCaixa = new Date();
+      atualizarDisplayData();
+      showModule('produtos');
+      atualizarUI();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('sidebar-mobile');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('hidden');
+    }
+
+    function showModule(module) {
+      document.querySelectorAll('.module-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`module-${module}`)?.classList.remove('hidden');
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`nav-${module}`)?.classList.add('active');
+      document.getElementById(`nav-${module}-mobile`)?.classList.add('active');
+    }
+
+    function abrirPainelVendas() {
+      document.getElementById('modal-vendas').classList.remove('hidden');
+      document.getElementById('busca-produto-venda').value = '';
+      renderProdutosVenda();
+      renderCarrinho();
+    }
+    
+    function fecharPainelVendas() { 
+      document.getElementById('modal-vendas').classList.add('hidden'); 
+    }
+    
+    function buscarProdutosVenda() {
+      renderProdutosVenda();
+    }
+    
+    function renderProdutosVenda() {
+      let produtos = allData.filter(item => item.tipo === 'produto' && item.estoque > 0);
+      const busca = document.getElementById('busca-produto-venda').value.toLowerCase();
+      
+      if (busca) {
+        produtos = produtos.filter(p => p.nome.toLowerCase().includes(busca));
+      }
+      
+      const container = document.getElementById('lista-produtos-venda');
+      
+      if (produtos.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-2 text-center text-gray-500 py-8">
+            <span class="text-4xl opacity-20">📦</span>
+            <p class="mt-2">Nenhum produto disponível</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = produtos.map(produto => `
+        <div class="produto-card">
+          <div class="flex flex-col gap-2">
+            <h4 class="font-bold text-gray-800 text-sm">${produto.nome}</h4>
+            <div class="flex justify-between items-center text-xs text-gray-600">
+              <span>Estoque: <strong>${produto.estoque}</strong></span>
+              <span class="text-green-600 font-bold text-base">R$ ${produto.valor_venda.toFixed(2)}</span>
+            </div>
+            <button onclick="adicionarAoCarrinho('${produto.__backendId}')" class="btn-primary text-white px-4 py-2 rounded-lg font-semibold text-sm mt-2">
+              + Adicionar
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function adicionarAoCarrinho(produtoId) {
+      const produto = allData.find(p => p.__backendId === produtoId);
+      if (!produto) return;
+      
+      const itemExistente = carrinhoVendas.find(item => item.produto_id === produtoId);
+      
+      if (itemExistente) {
+        if (itemExistente.quantidade >= produto.estoque) {
+          showToast('⚠️ Estoque insuficiente', 'error');
+          return;
+        }
+        itemExistente.quantidade++;
+      } else {
+        carrinhoVendas.push({
+          produto_id: produtoId,
+          nome: produto.nome,
+          valor_unitario: produto.valor_venda,
+          quantidade: 1,
+          estoque_disponivel: produto.estoque
+        });
+      }
+      
+      renderCarrinho();
+      atualizarTotalizador();
+      showToast('✅ Produto adicionado', 'success');
+    }
+    
+    function renderCarrinho() {
+      const container = document.getElementById('carrinho-items');
+      
+      if (carrinhoVendas.length === 0) {
+        container.innerHTML = `
+          <div class="text-center text-gray-400 py-8">
+            <span class="text-4xl opacity-20">🛒</span>
+            <p class="mt-2 text-sm">Carrinho vazio</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = carrinhoVendas.map((item, index) => `
+        <div class="carrinho-item">
+          <div class="flex justify-between items-start mb-2">
+            <h5 class="font-semibold text-gray-800 text-sm flex-1">${item.nome}</h5>
+            <button onclick="removerDoCarrinho(${index})" class="text-red-600 hover:text-red-800 ml-2">🗑️</button>
+          </div>
+          <div class="flex justify-between items-center text-xs text-gray-600">
+            <span>R$ ${item.valor_unitario.toFixed(2)}</span>
+            <div class="flex items-center gap-2">
+              <button onclick="alterarQuantidade(${index}, -1)" class="bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded font-bold">-</button>
+              <span class="font-bold text-gray-800">${item.quantidade}</span>
+              <button onclick="alterarQuantidade(${index}, 1)" class="bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded font-bold">+</button>
+            </div>
+          </div>
+          <div class="text-right mt-2">
+            <span class="text-green-600 font-bold text-sm">R$ ${(item.valor_unitario * item.quantidade).toFixed(2)}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function removerDoCarrinho(index) {
+      carrinhoVendas.splice(index, 1);
+      renderCarrinho();
+      atualizarTotalizador();
+      showToast('✅ Item removido', 'success');
+    }
+    
+    function alterarQuantidade(index, delta) {
+      const item = carrinhoVendas[index];
+      const novaQuantidade = item.quantidade + delta;
+      
+      if (novaQuantidade <= 0) {
+        removerDoCarrinho(index);
+        return;
+      }
+      
+      if (novaQuantidade > item.estoque_disponivel) {
+        showToast('⚠️ Estoque insuficiente', 'error');
+        return;
+      }
+      
+      item.quantidade = novaQuantidade;
+      renderCarrinho();
+      atualizarTotalizador();
+    }
+    
+    function atualizarTotalizador() {
+      const subtotal = carrinhoVendas.reduce((total, item) => total + (item.valor_unitario * item.quantidade), 0);
+      const desconto = parseFloat(document.getElementById('carrinho-desconto').value) || 0;
+      const valorDesconto = subtotal * (desconto / 100);
+      const total = subtotal - valorDesconto;
+      
+      document.getElementById('carrinho-subtotal').textContent = `R$ ${subtotal.toFixed(2)}`;
+      document.getElementById('carrinho-total').textContent = `R$ ${total.toFixed(2)}`;
+      
+      // Atualizar total no pagamento misto se estiver visível
+      if (!document.getElementById('campos-pagamento-misto').classList.contains('hidden')) {
+        document.getElementById('misto-total-pagar').textContent = `R$ ${total.toFixed(2)}`;
+        calcularTotalMisto();
+      }
+    }
+    
+    function verificarPagamentoMisto() {
+      const formaPagamento = document.getElementById('forma-pagamento-venda').value;
+      const camposMisto = document.getElementById('campos-pagamento-misto');
+      
+      if (formaPagamento === 'misto') {
+        camposMisto.classList.remove('hidden');
+        
+        // Calcular total atual
+        const subtotal = carrinhoVendas.reduce((total, item) => total + (item.valor_unitario * item.quantidade), 0);
+        const desconto = parseFloat(document.getElementById('carrinho-desconto').value) || 0;
+        const valorDesconto = subtotal * (desconto / 100);
+        const total = subtotal - valorDesconto;
+        
+        document.getElementById('misto-total-pagar').textContent = `R$ ${total.toFixed(2)}`;
+        
+        // Adicionar eventos aos campos de valor
+        document.getElementById('misto-valor1').addEventListener('input', calcularTotalMisto);
+        document.getElementById('misto-valor2').addEventListener('input', calcularTotalMisto);
+        document.getElementById('misto-valor3').addEventListener('input', calcularTotalMisto);
+      } else {
+        camposMisto.classList.add('hidden');
+        // Limpar campos
+        document.getElementById('misto-forma1').value = '';
+        document.getElementById('misto-forma2').value = '';
+        document.getElementById('misto-forma3').value = '';
+        document.getElementById('misto-valor1').value = '';
+        document.getElementById('misto-valor2').value = '';
+        document.getElementById('misto-valor3').value = '';
+      }
+    }
+    
+    function calcularTotalMisto() {
+      const valor1 = parseFloat(document.getElementById('misto-valor1').value) || 0;
+      const valor2 = parseFloat(document.getElementById('misto-valor2').value) || 0;
+      const valor3 = parseFloat(document.getElementById('misto-valor3').value) || 0;
+      
+      const totalInformado = valor1 + valor2 + valor3;
+      
+      // Pegar o total a pagar do carrinho
+      const subtotal = carrinhoVendas.reduce((total, item) => total + (item.valor_unitario * item.quantidade), 0);
+      const desconto = parseFloat(document.getElementById('carrinho-desconto').value) || 0;
+      const valorDesconto = subtotal * (desconto / 100);
+      const totalPagar = subtotal - valorDesconto;
+      
+      document.getElementById('misto-total-informado').textContent = `R$ ${totalInformado.toFixed(2)}`;
+      
+      const diferenca = totalInformado - totalPagar;
+      const diferencaEl = document.getElementById('misto-diferenca');
+      
+      if (Math.abs(diferenca) < 0.01) {
+        diferencaEl.textContent = '✅ Valores conferem!';
+        diferencaEl.className = 'text-xs mt-2 text-center font-semibold text-green-600';
+      } else if (diferenca > 0) {
+        diferencaEl.textContent = `⚠️ Excedente: R$ ${diferenca.toFixed(2)}`;
+        diferencaEl.className = 'text-xs mt-2 text-center font-semibold text-orange-600';
+      } else {
+        diferencaEl.textContent = `⚠️ Falta: R$ ${Math.abs(diferenca).toFixed(2)}`;
+        diferencaEl.className = 'text-xs mt-2 text-center font-semibold text-red-600';
+      }
+    }
+    
+    async function gerarReciboPDF(dadosVenda) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({
+        orientation: "p",
+        unit: "mm",
+        format: "a4"
+      });
+
+      // ===== CABEÇALHO PROFISSIONAL COM BORDA =====
+      // Fundo verde no topo
+      doc.setFillColor(16, 185, 129);
+      doc.rect(0, 0, 210, 45, 'F');
+      
+      // Logo e Nome da Empresa
+      doc.setFontSize(28);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont(undefined, 'bold');
+      doc.text("MEDICBIO", 105, 20, { align: "center" });
+      
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'normal');
+      doc.text("FARMÁCIA DE MANIPULAÇÃO", 105, 27, { align: "center" });
+      
+      // Informações da Empresa (em branco sobre o verde)
+      doc.setFontSize(8);
+      doc.text("R. Dr. João Tomé, 780 - Camocim, CE, 62400-000", 105, 34, { align: "center" });
+      doc.text("Telefone: (86) 99901-8464", 105, 39, { align: "center" });
+
+      // ===== TÍTULO DO RECIBO =====
+      doc.setFontSize(16);
+      doc.setTextColor(16, 185, 129);
+      doc.setFont(undefined, 'bold');
+      doc.text("RECIBO DE VENDA", 105, 58, { align: "center" });
+      
+      // Borda decorativa
+      doc.setDrawColor(16, 185, 129);
+      doc.setLineWidth(0.5);
+      doc.line(60, 60, 150, 60);
+
+      // ===== INFORMAÇÕES DA VENDA =====
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont(undefined, 'normal');
+      
+      // Box com informações
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(15, 68, 180, 18, 3, 3, 'S');
+      
+      doc.setFont(undefined, 'bold');
+      doc.text("Data:", 20, 76);
+      doc.text("Hora:", 20, 82);
+      doc.text("Nº Recibo:", 110, 76);
+      
+      doc.setFont(undefined, 'normal');
+      doc.text(new Date(dadosVenda.data).toLocaleDateString('pt-BR'), 35, 76);
+      doc.text(new Date().toLocaleTimeString('pt-BR'), 35, 82);
+      const numeroRecibo = Math.floor(Math.random() * 100000).toString().padStart(6, '0');
+      doc.text(`#${numeroRecibo}`, 135, 76);
+      doc.text(dadosVenda.formaPagamentoTexto, 110, 82);
+
+      // ===== TABELA DE PRODUTOS =====
+      let y = 100;
+      
+      // Cabeçalho da tabela com fundo
+      doc.setFillColor(240, 240, 240);
+      doc.rect(15, y - 6, 180, 8, 'F');
+      
+      doc.setFontSize(9);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(60, 60, 60);
+      doc.text("PRODUTO", 18, y);
+      doc.text("QTD", 140, y, { align: "center" });
+      doc.text("VALOR UNIT.", 160, y, { align: "center" });
+      doc.text("SUBTOTAL", 185, y, { align: "right" });
+      
+      // Linha abaixo do cabeçalho
+      doc.setDrawColor(200, 200, 200);
+      doc.line(15, y + 2, 195, y + 2);
+      
+      // Itens da venda
+      y += 10;
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      
+      dadosVenda.itens.forEach((item, index) => {
+        // Fundo alternado para melhor leitura
+        if (index % 2 === 0) {
+          doc.setFillColor(250, 250, 250);
+          doc.rect(15, y - 5, 180, 7, 'F');
+        }
+        
+        const nomeTruncado = item.nome.length > 45 ? item.nome.substring(0, 42) + '...' : item.nome;
+        doc.text(nomeTruncado, 18, y);
+        doc.text(item.quantidade.toString(), 140, y, { align: "center" });
+        doc.text(`R$ ${item.valor_unitario.toFixed(2)}`, 160, y, { align: "center" });
+        doc.text(`R$ ${(item.valor_unitario * item.quantidade).toFixed(2)}`, 192, y, { align: "right" });
+        y += 7;
+      });
+      
+      // Linha divisória antes dos totais
+      y += 3;
+      doc.setDrawColor(16, 185, 129);
+      doc.setLineWidth(0.5);
+      doc.line(15, y, 195, y);
+
+      // ===== TOTAIS =====
+      y += 10;
+      doc.setFontSize(10);
+      doc.setTextColor(80, 80, 80);
+      
+      // Box de totais
+      doc.setFillColor(248, 250, 252);
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(120, y - 6, 75, (dadosVenda.desconto > 0 ? 24 : 17), 2, 2, 'FD');
+      
+      doc.setFont(undefined, 'normal');
+      doc.text("Subtotal:", 125, y);
+      doc.text(`R$ ${dadosVenda.subtotal.toFixed(2)}`, 190, y, { align: "right" });
+      
+      if (dadosVenda.desconto > 0) {
+        y += 7;
+        doc.setTextColor(220, 38, 38);
+        doc.text(`Desconto (${dadosVenda.desconto}%):`, 125, y);
+        doc.text(`- R$ ${dadosVenda.valorDesconto.toFixed(2)}`, 190, y, { align: "right" });
+      }
+      
+      // Total destacado
+      y += 7;
+      doc.setFont(undefined, 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(16, 185, 129);
+      doc.text("TOTAL:", 125, y);
+      doc.text(`R$ ${dadosVenda.total.toFixed(2)}`, 190, y, { align: "right" });
+
+      // ===== QR CODES E RODAPÉ =====
+      y = 240; // Posição fixa para o rodapé
+      
+      // Linha divisória
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.3);
+      doc.line(15, y, 195, y);
+      
+      y += 8;
+      
+      // QR Codes lado a lado
+      doc.setFontSize(8);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont(undefined, 'bold');
+      
+      // QR Code Instagram (esquerda)
+      const qrInstagram = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('https://www.instagram.com/medicbio26/')}`;
+      try {
+        doc.addImage(qrInstagram, 'PNG', 25, y, 25, 25);
+        doc.text("Siga no Instagram", 37.5, y + 28, { align: "center" });
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(7);
+        doc.text("@medicbio26", 37.5, y + 32, { align: "center" });
+      } catch (e) {
+        console.log('Erro ao carregar QR Instagram');
+      }
+      
+      // QR Code Google (direita)
+      const qrGoogle = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('https://share.google/4lursoq1a8tHt3kKC')}`;
+      try {
+        doc.addImage(qrGoogle, 'PNG', 160, y, 25, 25);
+        doc.setFont(undefined, 'bold');
+        doc.setFontSize(8);
+        doc.text("Avalie no Google", 172.5, y + 28, { align: "center" });
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(7);
+        doc.text("Sua opinião é importante!", 172.5, y + 32, { align: "center" });
+      } catch (e) {
+        console.log('Erro ao carregar QR Google');
+      }
+      
+      // Mensagem central
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(16, 185, 129);
+      doc.text("Obrigado pela preferência!", 105, y + 10, { align: "center" });
+      
+      doc.setFontSize(8);
+      doc.setFont(undefined, 'normal');
+      doc.setTextColor(100, 100, 100);
+      doc.text("Horário de funcionamento: Segunda a Sábado - 08:00 às 18:00", 105, y + 16, { align: "center" });
+      doc.text("Este documento não possui valor fiscal", 105, y + 21, { align: "center" });
+
+      // ===== BAIXAR ARQUIVO =====
+      const dataFormatada = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const horaFormatada = new Date().toTimeString().split(':').slice(0, 2).join('');
+      doc.save(`medicbio_recibo_${numeroRecibo}_${dataFormatada}_${horaFormatada}.pdf`);
+    }
+    
+    function finalizarVenda() {
+      if (vendaEmProcessamento) {
+        showToast('⏳ Aguarde...', 'error');
+        return;
+      }
+      
+      if (carrinhoVendas.length === 0) {
+        showToast('⚠️ Carrinho vazio', 'error');
+        return;
+      }
+      
+      const formaPagamento = document.getElementById('forma-pagamento-venda').value;
+      if (!formaPagamento) {
+        showToast('⚠️ Selecione forma de pagamento', 'error');
+        return;
+      }
+      
+      // Validar pagamento misto
+      if (formaPagamento === 'misto') {
+        const forma1 = document.getElementById('misto-forma1').value;
+        const forma2 = document.getElementById('misto-forma2').value;
+        const valor1 = parseFloat(document.getElementById('misto-valor1').value) || 0;
+        const valor2 = parseFloat(document.getElementById('misto-valor2').value) || 0;
+        
+        if (!forma1 || !forma2) {
+          showToast('⚠️ Preencha pelo menos 2 formas de pagamento', 'error');
+          return;
+        }
+        
+        if (valor1 <= 0 || valor2 <= 0) {
+          showToast('⚠️ Valores devem ser maiores que zero', 'error');
+          return;
+        }
+        
+        // Verificar se os valores conferem
+        const subtotal = carrinhoVendas.reduce((total, item) => total + (item.valor_unitario * item.quantidade), 0);
+        const desconto = parseFloat(document.getElementById('carrinho-desconto').value) || 0;
+        const valorDesconto = subtotal * (desconto / 100);
+        const totalPagar = subtotal - valorDesconto;
+        
+        const valor3 = parseFloat(document.getElementById('misto-valor3').value) || 0;
+        const totalInformado = valor1 + valor2 + valor3;
+        const diferenca = Math.abs(totalInformado - totalPagar);
+        
+        if (diferenca > 0.01) {
+          showToast('⚠️ Os valores não conferem com o total', 'error');
+          return;
+        }
+      }
+      
+      // Calcular dados da venda
+      const subtotal = carrinhoVendas.reduce((total, item) => total + (item.valor_unitario * item.quantidade), 0);
+      const desconto = parseFloat(document.getElementById('carrinho-desconto').value) || 0;
+      const valorDesconto = subtotal * (desconto / 100);
+      const total = subtotal - valorDesconto;
+      
+      // Criar descrição da forma de pagamento
+      let descricaoFormaPagamento = '';
+      let formasPagamentoArray = [];
+      
+      const labelsFormas = {
+        'dinheiro': '💵 Dinheiro',
+        'pix': '📱 PIX',
+        'cartao-debito': '💳 Cartão de Débito',
+        'cartao-credito': '💳 Cartão de Crédito',
+        'transferencia': '🏦 Transferência',
+        'boleto': '📄 Boleto'
+      };
+      
+      if (formaPagamento === 'misto') {
+        const forma1 = document.getElementById('misto-forma1').value;
+        const forma2 = document.getElementById('misto-forma2').value;
+        const forma3 = document.getElementById('misto-forma3').value;
+        const valor1 = parseFloat(document.getElementById('misto-valor1').value) || 0;
+        const valor2 = parseFloat(document.getElementById('misto-valor2').value) || 0;
+        const valor3 = parseFloat(document.getElementById('misto-valor3').value) || 0;
+        
+        formasPagamentoArray.push({ forma: forma1, valor: valor1 });
+        formasPagamentoArray.push({ forma: forma2, valor: valor2 });
+        if (forma3 && valor3 > 0) {
+          formasPagamentoArray.push({ forma: forma3, valor: valor3 });
+        }
+        
+        descricaoFormaPagamento = formasPagamentoArray
+          .map(fp => `${labelsFormas[fp.forma] || fp.forma}: R$ ${fp.valor.toFixed(2)}`)
+          .join(' + ');
+      } else {
+        descricaoFormaPagamento = labelsFormas[formaPagamento] || formaPagamento;
+      }
+      
+      // Preparar dados para o PDF
+      const dadosVenda = {
+        data: new Date().toISOString().split('T')[0],
+        itens: carrinhoVendas.map(item => ({
+          nome: item.nome,
+          quantidade: item.quantidade,
+          valor_unitario: item.valor_unitario
+        })),
+        subtotal: subtotal,
+        desconto: desconto,
+        valorDesconto: valorDesconto,
+        total: total,
+        formaPagamentoTexto: descricaoFormaPagamento
+      };
+      
+      // Perguntar se deseja gerar PDF
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+      modal.innerHTML = `
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+          <h3 class="text-2xl font-bold mb-4 text-gray-800">📄 Gerar Recibo em PDF?</h3>
+          <p class="text-gray-600 mb-6">Deseja baixar o recibo desta venda em PDF?</p>
+          <div class="flex gap-3">
+            <button onclick="processarVendaSemPDF(${JSON.stringify(dadosVenda).replace(/"/g, '&quot;')})" class="btn-secondary text-white px-6 py-3 rounded-xl flex-1 font-semibold">Não</button>
+            <button onclick="processarVendaComPDF(${JSON.stringify(dadosVenda).replace(/"/g, '&quot;')})" class="btn-primary text-white px-6 py-3 rounded-xl flex-1 font-semibold">✓ Sim, Gerar PDF</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+    
+    function processarVendaSemPDF(dadosVenda) {
+      processarVenda(dadosVenda, false);
+      document.querySelectorAll('.fixed.inset-0').forEach(el => el.remove());
+    }
+    
+    async function processarVendaComPDF(dadosVenda) {
+      await processarVenda(dadosVenda, true);
+      document.querySelectorAll('.fixed.inset-0').forEach(el => el.remove());
+    }
+    
+    async function processarVenda(dadosVenda, gerarPDF) {
+      try {
+        vendaEmProcessamento = true;
+        const btn = document.getElementById('btn-finalizar-venda');
+        btn.disabled = true;
+        btn.innerHTML = 'Processando...<span class="loading-spinner"></span>';
+        
+        const formaPagamento = document.getElementById('forma-pagamento-venda').value;
+        
+        // Criar descrição detalhada com produtos
+        let descricaoFormaPagamento = '';
+        let formasPagamentoArray = [];
+        
+        if (formaPagamento === 'misto') {
+          const forma1 = document.getElementById('misto-forma1').value;
+          const forma2 = document.getElementById('misto-forma2').value;
+          const forma3 = document.getElementById('misto-forma3').value;
+          const valor1 = parseFloat(document.getElementById('misto-valor1').value) || 0;
+          const valor2 = parseFloat(document.getElementById('misto-valor2').value) || 0;
+          const valor3 = parseFloat(document.getElementById('misto-valor3').value) || 0;
+          
+          const labelsFormas = {
+            'dinheiro': 'Dinheiro',
+            'pix': 'PIX',
+            'cartao-debito': 'Débito',
+            'cartao-credito': 'Crédito'
+          };
+          
+          formasPagamentoArray.push({ forma: forma1, valor: valor1 });
+          formasPagamentoArray.push({ forma: forma2, valor: valor2 });
+          if (forma3 && valor3 > 0) {
+            formasPagamentoArray.push({ forma: forma3, valor: valor3 });
+          }
+          
+          descricaoFormaPagamento = formasPagamentoArray
+            .map(fp => `${labelsFormas[fp.forma] || fp.forma}: R$ ${fp.valor.toFixed(2)}`)
+            .join(' + ');
+        }
+        
+        criarRegistro({
+          tipo: 'transacao',
+          data: new Date().toISOString().split('T')[0],
+          tipo_transacao: 'entrada',
+          categoria: 'venda',
+          valor: dadosVenda.total,
+          descricao: `Venda - ${carrinhoVendas.length} item(ns) - Desconto: ${dadosVenda.desconto}%${formaPagamento === 'misto' ? ' - Misto: ' + descricaoFormaPagamento : ''}`,
+          forma_pagamento: formaPagamento,
+          formas_pagamento_misto: formaPagamento === 'misto' ? formasPagamentoArray : null,
+          produtos_vendidos: carrinhoVendas.map(item => ({
+            produto_id: item.produto_id,
+            nome: item.nome,
+            quantidade: item.quantidade,
+            valor_unitario: item.valor_unitario
+          }))
+        });
+        
+        carrinhoVendas.forEach(item => {
+          const produto = allData.find(p => p.__backendId === item.produto_id);
+          if (produto) {
+            produto.estoque -= item.quantidade;
+            atualizarRegistro(produto);
+          }
+        });
+        
+        // Gerar PDF se solicitado
+        if (gerarPDF) {
+          await gerarReciboPDF(dadosVenda);
+        }
+        
+        carrinhoVendas = [];
+        document.getElementById('carrinho-desconto').value = '0';
+        document.getElementById('forma-pagamento-venda').value = '';
+        document.getElementById('campos-pagamento-misto').classList.add('hidden');
+        
+        // Limpar campos do misto
+        document.getElementById('misto-forma1').value = '';
+        document.getElementById('misto-forma2').value = '';
+        document.getElementById('misto-forma3').value = '';
+        document.getElementById('misto-valor1').value = '';
+        document.getElementById('misto-valor2').value = '';
+        document.getElementById('misto-valor3').value = '';
+        
+        renderCarrinho();
+        atualizarTotalizador();
+        renderProdutosVenda();
+        atualizarDashboardCaixa();
+        
+        showToast('✅ Venda realizada com sucesso!', 'success');
+        
+      } finally {
+        const btn = document.getElementById('btn-finalizar-venda');
+        btn.disabled = false;
+        btn.innerHTML = ' Finalizar Venda';
+        vendaEmProcessamento = false;
+      }
+    }
+    
+    function limparCarrinho() {
+      carrinhoVendas = [];
+      document.getElementById('carrinho-desconto').value = '0';
+      document.getElementById('forma-pagamento-venda').value = '';
+      renderCarrinho();
+      atualizarTotalizador();
+    }
+
+    // PRODUTOS
+    document.getElementById('form-produto').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const produto = {
+        tipo: 'produto',
+        nome: document.getElementById('produto-nome').value.trim(),
+        validade: document.getElementById('produto-validade').value,
+        estoque: parseInt(document.getElementById('produto-estoque').value),
+        estoque_minimo: parseInt(document.getElementById('produto-estoque-minimo').value),
+        valor_custo: parseFloat(document.getElementById('produto-valor-custo').value),
+        valor_venda: parseFloat(document.getElementById('produto-valor-venda').value)
+      };
+      
+      if (produtoEmEdicao) {
+        const registro = allData.find(p => p.__backendId === produtoEmEdicao);
+        if (registro) {
+          Object.assign(registro, produto);
+          atualizarRegistro(registro);
+          showToast('✅ Produto atualizado!', 'success');
+          produtoEmEdicao = null;
+        }
+      } else {
+        criarRegistro(produto);
+        showToast('✅ Produto cadastrado!', 'success');
+      }
+      
+      this.reset();
+      document.getElementById('produto-validade').value = new Date().toISOString().split('T')[0];
+    });p
+
+    function renderProdutos() {
+      let produtos = allData.filter(item => item.tipo === 'produto');
+      const busca = document.getElementById('busca-produto').value.toLowerCase();
+      
+      if (busca) {
+        produtos = produtos.filter(p => p.nome.toLowerCase().includes(busca));
+      }
+      
+      if (filtroProdutoAtual !== 'todos') {
+        produtos = produtos.filter(p => {
+          if (filtroProdutoAtual === 'positivo') return p.estoque > p.estoque_minimo;
+          if (filtroProdutoAtual === 'baixo') return p.estoque > 0 && p.estoque <= p.estoque_minimo;
+          if (filtroProdutoAtual === 'sem') return p.estoque === 0;
+          return true;
+        });
+      }
+      
+      const tbody = document.getElementById('produtos-list');
+      
+      if (produtos.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="px-4 py-12 text-center text-gray-500">
+              <div class="flex flex-col items-center gap-3">
+                <span class="text-5xl opacity-20">📦</span>
+                <span>Nenhum produto encontrado</span>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      tbody.innerHTML = produtos.map(produto => {
+        const margem = ((produto.valor_venda - produto.valor_custo) / produto.valor_custo * 100).toFixed(1);
+        let statusEstoque = '';
+        let corEstoque = '';
+        
+        if (produto.estoque === 0) {
+          statusEstoque = '❌ Sem estoque';
+          corEstoque = 'text-red-600 font-bold';
+        } else if (produto.estoque <= produto.estoque_minimo) {
+          statusEstoque = '⚠️ Estoque baixo';
+          corEstoque = 'text-orange-600 font-bold';
+        } else {
+          statusEstoque = '✅ OK';
+          corEstoque = 'text-green-600 font-bold';
+        }
+        
+        const dataValidade = new Date(produto.validade + 'T00:00:00');
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        const diasRestantes = Math.ceil((dataValidade - hoje) / (1000 * 60 * 60 * 24));
+        
+        let alertaValidade = '';
+        if (diasRestantes < 0) {
+          alertaValidade = '<span class="text-red-600 font-bold text-xs">⚠️ VENCIDO</span>';
+        } else if (diasRestantes <= 30) {
+          alertaValidade = '<span class="text-orange-600 font-bold text-xs">⚠️ Vence em breve</span>';
+        }
+        
+        return `
+          <tr class="border-b border-gray-100 hover:bg-gray-50">
+            <td class="px-4 py-4">
+              <div class="font-semibold text-gray-800">${produto.nome}</div>
+            </td>
+            <td class="px-4 py-4">
+              <div>${new Date(produto.validade + 'T00:00:00').toLocaleDateString('pt-BR')}</div>
+              ${alertaValidade}
+            </td>
+            <td class="px-4 py-4 ${corEstoque}">${produto.estoque}</td>
+            <td class="px-4 py-4 text-gray-600">${produto.estoque_minimo}</td>
+            <td class="px-4 py-4 text-gray-600">R$ ${produto.valor_custo.toFixed(2)}</td>
+            <td class="px-4 py-4 font-bold text-green-600">R$ ${produto.valor_venda.toFixed(2)}</td>
+            <td class="px-4 py-4">
+              <span class="px-3 py-1 rounded-lg text-sm font-semibold ${margem >= 20 ? 'bg-green-100 text-green-700' : margem >= 10 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}">
+                ${margem}%
+              </span>
+            </td>
+            <td class="px-4 py-4">
+              <div class="flex gap-2">
+                <button onclick="editarProduto('${produto.__backendId}')" class="text-blue-600 hover:text-blue-800 font-semibold text-sm">✏️ Editar</button>
+                <button onclick="deletarProduto('${produto.__backendId}')" class="text-red-600 hover:text-red-800 font-semibold text-sm">🗑️ Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function atualizarStatusProdutos() {
+      const produtos = allData.filter(item => item.tipo === 'produto');
+      const semEstoque = produtos.filter(p => p.estoque === 0).length;
+      const estoqueBaixo = produtos.filter(p => p.estoque > 0 && p.estoque <= p.estoque_minimo).length;
+      const estoqueOk = produtos.filter(p => p.estoque > p.estoque_minimo).length;
+      
+      document.getElementById('status-sem-estoque').textContent = semEstoque;
+      document.getElementById('status-estoque-baixo').textContent = estoqueBaixo;
+      document.getElementById('status-estoque-ok').textContent = estoqueOk;
+    }
+
+    function filtrarProdutos(filtro) {
+      filtroProdutoAtual = filtro;
+      
+      document.querySelectorAll('[id^="filtro-"]').forEach(btn => {
+        btn.classList.remove('bg-green-600', 'text-white');
+        btn.classList.add('bg-gray-200', 'text-gray-700');
+      });
+      
+      document.getElementById(`filtro-${filtro}`).classList.remove('bg-gray-200', 'text-gray-700');
+      document.getElementById(`filtro-${filtro}`).classList.add('bg-green-600', 'text-white');
+      
+      renderProdutos();
+    }
+
+    function editarProduto(id) {
+      const produto = allData.find(p => p.__backendId === id);
+      if (!produto) return;
+      
+      document.getElementById('produto-nome').value = produto.nome;
+      document.getElementById('produto-validade').value = produto.validade;
+      document.getElementById('produto-estoque').value = produto.estoque;
+      document.getElementById('produto-estoque-minimo').value = produto.estoque_minimo;
+      document.getElementById('produto-valor-custo').value = produto.valor_custo;
+      document.getElementById('produto-valor-venda').value = produto.valor_venda;
+      
+      produtoEmEdicao = id;
+      
+      document.querySelector('#form-produto button[type="submit"]').textContent = 'Atualizar Produto';
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showToast('✏️ Editando produto...', 'success');
+    }
+
+    function deletarProduto(id) {
+      const produto = allData.find(p => p.__backendId === id);
+      if (!produto) return;
+      
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+      modal.innerHTML = `
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+          <h3 class="text-2xl font-bold mb-4 text-gray-800">⚠️ Confirmar Exclusão</h3>
+          <p class="text-gray-600 mb-6">Deseja excluir <strong>${produto.nome}</strong>?</p>
+          <div class="flex gap-3">
+            <button onclick="this.closest('.fixed').remove()" class="btn-secondary text-white px-6 py-3 rounded-xl flex-1 font-semibold">X</button>
+            <button onclick="confirmarDeleteProduto('${id}')" class="btn-danger text-white px-6 py-3 rounded-xl flex-1 font-semibold">Excluir</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function confirmarDeleteProduto(id) {
+      const produto = allData.find(p => p.__backendId === id);
+      if (produto) {
+        deletarRegistro(produto);
+        showToast('✅ Produto excluído!', 'success');
+      }
+      document.querySelectorAll('.fixed.inset-0').forEach(el => el.remove());
+    }
+
+    // CLIENTES
+    document.getElementById('form-cliente').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const cliente = {
+        tipo: 'cliente',
+        data_cadastro: document.getElementById('cliente-data-cadastro').value,
+        nome: document.getElementById('cliente-nome').value.trim(),
+        telefone1: document.getElementById('cliente-telefone1').value.trim(),
+        telefone2: document.getElementById('cliente-telefone2').value.trim(),
+        cep: document.getElementById('cliente-cep').value.trim(),
+        estado: document.getElementById('cliente-estado').value.trim(),
+        cidade: document.getElementById('cliente-cidade').value.trim(),
+        rua: document.getElementById('cliente-rua').value.trim(),
+        numero: document.getElementById('cliente-numero').value.trim(),
+        complemento: document.getElementById('cliente-complemento').value.trim(),
+        bairro: document.getElementById('cliente-bairro').value.trim(),
+        ponto_referencia: document.getElementById('cliente-ponto-ref').value.trim()
+      };
+      
+      if (clienteEmEdicao) {
+        const registro = allData.find(c => c.__backendId === clienteEmEdicao);
+        if (registro) {
+          Object.assign(registro, cliente);
+          atualizarRegistro(registro);
+          showToast('✅ Cliente atualizado!', 'success');
+          clienteEmEdicao = null;
+        }
+      } else {
+        criarRegistro(cliente);
+        showToast('✅ Cliente cadastrado!', 'success');
+      }
+      
+      this.reset();
+      document.getElementById('cliente-data-cadastro').value = new Date().toISOString().split('T')[0];
+    });
+
+    function renderClientes() {
+      let clientes = allData.filter(item => item.tipo === 'cliente');
+      const busca = document.getElementById('busca-cliente').value.toLowerCase();
+      
+      if (busca) {
+        clientes = clientes.filter(c => c.nome.toLowerCase().includes(busca));
+      }
+      
+      const tbody = document.getElementById('clientes-list');
+      
+      if (clientes.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="px-4 py-12 text-center text-gray-500">
+              <div class="flex flex-col items-center gap-3">
+                <span class="text-5xl opacity-20">👥</span>
+                <span>Nenhum cliente encontrado</span>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      tbody.innerHTML = clientes.map(cliente => {
+        const atendimentos = allData.filter(a => a.tipo === 'atendimento' && a.cliente_id === cliente.__backendId);
+        const totalAtendimentos = atendimentos.length;
+        
+        return `
+          <tr class="border-b border-gray-100 hover:bg-gray-50">
+            <td class="px-4 py-4 text-gray-600">${new Date(cliente.data_cadastro + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+            <td class="px-4 py-4">
+              <div class="font-semibold text-gray-800">${cliente.nome}</div>
+            </td>
+            <td class="px-4 py-4 text-gray-600">${cliente.telefone1}</td>
+            <td class="px-4 py-4">
+              <span class="px-3 py-1 rounded-lg text-sm font-semibold bg-blue-100 text-blue-700">
+                ${totalAtendimentos} receituário(s)
+              </span>
+            </td>
+            <td class="px-4 py-4">
+              <div class="flex gap-2">
+                <button onclick="editarCliente('${cliente.__backendId}')" class="text-blue-600 hover:text-blue-800 font-semibold text-sm">✏️ Editar</button>
+                <button onclick="deletarCliente('${cliente.__backendId}')" class="text-red-600 hover:text-red-800 font-semibold text-sm">🗑️ Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function atualizarStatusClientes() {
+      const clientes = allData.filter(item => item.tipo === 'cliente');
+      const atendimentos = allData.filter(item => item.tipo === 'atendimento');
+      
+      const aguardando = atendimentos.filter(a => a.status === 'aguardando').length;
+      const confirmados = atendimentos.filter(a => a.status === 'confirmado').length;
+      const finalizados = atendimentos.filter(a => a.status === 'finalizado').length;
+      
+      document.getElementById('status-total-clientes').textContent = clientes.length;
+      document.getElementById('status-clientes-aguardando').textContent = aguardando;
+      document.getElementById('status-clientes-confirmados').textContent = confirmados;
+      document.getElementById('status-clientes-finalizados').textContent = finalizados;
+    }
+
+    function editarCliente(id) {
+      const cliente = allData.find(c => c.__backendId === id);
+      if (!cliente) return;
+      
+      document.getElementById('cliente-data-cadastro').value = cliente.data_cadastro;
+      document.getElementById('cliente-nome').value = cliente.nome;
+      document.getElementById('cliente-telefone1').value = cliente.telefone1;
+      document.getElementById('cliente-telefone2').value = cliente.telefone2 || '';
+      document.getElementById('cliente-cep').value = cliente.cep || '';
+      document.getElementById('cliente-estado').value = cliente.estado || '';
+      document.getElementById('cliente-cidade').value = cliente.cidade || '';
+      document.getElementById('cliente-rua').value = cliente.rua || '';
+      document.getElementById('cliente-numero').value = cliente.numero || '';
+      document.getElementById('cliente-complemento').value = cliente.complemento || '';
+      document.getElementById('cliente-bairro').value = cliente.bairro || '';
+      document.getElementById('cliente-ponto-ref').value = cliente.ponto_referencia || '';
+      
+      clienteEmEdicao = id;
+      
+      document.querySelector('#form-cliente button[type="submit"]').textContent = 'Atualizar Cliente';
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showToast('✏️ Editando cliente...', 'success');
+    }
+
+    function deletarCliente(id) {
+      const cliente = allData.find(c => c.__backendId === id);
+      if (!cliente) return;
+      
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+      modal.innerHTML = `
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+          <h3 class="text-2xl font-bold mb-4 text-gray-800">⚠️ Confirmar Exclusão</h3>
+          <p class="text-gray-600 mb-6">Deseja excluir <strong>${cliente.nome}</strong>?</p>
+          <div class="flex gap-3">
+            <button onclick="this.closest('.fixed').remove()" class="btn-secondary text-white px-6 py-3 rounded-xl flex-1 font-semibold">X</button>
+            <button onclick="confirmarDeleteCliente('${id}')" class="btn-danger text-white px-6 py-3 rounded-xl flex-1 font-semibold">Excluir</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function confirmarDeleteCliente(id) {
+      const cliente = allData.find(c => c.__backendId === id);
+      if (cliente) {
+        deletarRegistro(cliente);
+        showToast('✅ Cliente excluído!', 'success');
+      }
+      document.querySelectorAll('.fixed.inset-0').forEach(el => el.remove());
+    }
+
+    // ATENDIMENTOS
+    document.getElementById('form-atendimento').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      if (!clienteSelecionadoAtendimento) {
+        showToast('⚠️ Selecione um cliente', 'error');
+        return;
+      }
+      
+      const atendimento = {
+        tipo: 'atendimento',
+        data: document.getElementById('atend-data').value,
+        horario: document.getElementById('atend-horario').value,
+        origem: document.getElementById('atend-origem').value.trim(),
+        cliente_id: clienteSelecionadoAtendimento.__backendId,
+        cliente_nome: clienteSelecionadoAtendimento.nome,
+        cliente_telefone: clienteSelecionadoAtendimento.telefone1,
+        prescricao: document.getElementById('atend-prescricao').value.trim(),
+        status: 'aguardando'
+      };
+      
+      criarRegistro(atendimento);
+      showToast('✅ Atendimento registrado!', 'success');
+      
+      this.reset();
+      document.getElementById('atend-data').value = new Date().toISOString().split('T')[0];
+      clienteSelecionadoAtendimento = null;
+      document.getElementById('cliente-sugestoes').classList.add('hidden');
+    });
+
+    function buscarClienteAtendimento() {
+      const busca = document.getElementById('atend-cliente').value.toLowerCase();
+      const container = document.getElementById('cliente-sugestoes');
+      
+      if (busca.length < 2) {
+        container.classList.add('hidden');
+        return;
+      }
+      
+      const clientes = allData.filter(item => 
+        item.tipo === 'cliente' && 
+        item.nome.toLowerCase().includes(busca)
+      );
+      
+      if (clientes.length === 0) {
+        container.innerHTML = '<div class="px-4 py-3 text-gray-500 text-sm">Nenhum cliente encontrado</div>';
+        container.classList.remove('hidden');
+        return;
+      }
+      
+      container.innerHTML = clientes.map(cliente => `
+        <div class="cliente-sugestao" onclick='selecionarClienteAtendimento(${JSON.stringify(cliente)})'>
+          <div class="font-semibold text-gray-800 text-sm">${cliente.nome}</div>
+          <div class="text-xs text-gray-600">${cliente.telefone1}</div>
+        </div>
+      `).join('');
+      
+      container.classList.remove('hidden');
+    }
+
+    function selecionarClienteAtendimento(cliente) {
+      clienteSelecionadoAtendimento = cliente;
+      document.getElementById('atend-cliente').value = cliente.nome;
+      document.getElementById('cliente-sugestoes').classList.add('hidden');
+      showToast('✅ Cliente selecionado', 'success');
+    }
+
+    function renderAtendimentos() {
+      let atendimentos = allData.filter(item => item.tipo === 'atendimento');
+      
+      // Aplicar busca
+      const busca = document.getElementById('busca-atendimento').value.toLowerCase();
+      if (busca) {
+        atendimentos = atendimentos.filter(a => 
+          a.cliente_nome.toLowerCase().includes(busca) ||
+          a.origem.toLowerCase().includes(busca) ||
+          a.prescricao.toLowerCase().includes(busca)
+        );
+      }
+      
+      // Aplicar filtro de status
+      if (filtroAtendimentoAtual !== 'todos') {
+        atendimentos = atendimentos.filter(a => a.status === filtroAtendimentoAtual);
+      }
+      
+      const tbody = document.getElementById('atendimentos-list');
+      
+      if (atendimentos.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="px-4 py-12 text-center text-gray-500">
+              <div class="flex flex-col items-center gap-3">
+                <span class="text-5xl opacity-20">🔄</span>
+                <span>Nenhum atendimento cadastrado</span>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      tbody.innerHTML = atendimentos.map(atend => {
+        let badgeStatus = '';
+        if (atend.status === 'aguardando') badgeStatus = 'bg-orange-100 text-orange-700';
+        if (atend.status === 'confirmado') badgeStatus = 'bg-green-100 text-green-700';
+        if (atend.status === 'finalizado') badgeStatus = 'bg-purple-100 text-purple-700';
+        if (atend.status === 'nao_respondida') badgeStatus = 'bg-red-100 text-red-700';
+        
+        const statusTexto = {
+          'aguardando': '⏳ Aguardando',
+          'confirmado': '✅ Confirmado',
+          'finalizado': '🎉 Finalizado',
+          'nao_respondida': '❌ Não Respondida'
+        }[atend.status];
+        
+        return `
+          <tr class="border-b border-gray-100 hover:bg-gray-50">
+            <td class="px-4 py-4 text-gray-600">${new Date(atend.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+            <td class="px-4 py-4 text-gray-600">${atend.horario}</td>
+            <td class="px-4 py-4 text-gray-600">${atend.origem}</td>
+            <td class="px-4 py-4 font-semibold text-gray-800">${atend.cliente_nome}</td>
+            <td class="px-4 py-4 text-gray-600">${atend.cliente_telefone}</td>
+            <td class="px-4 py-4">
+              <span class="px-3 py-1 rounded-lg text-sm font-semibold ${badgeStatus}">${statusTexto}</span>
+            </td>
+            <td class="px-4 py-4 text-sm text-gray-600 max-w-xs truncate">${atend.prescricao}</td>
+            <td class="px-4 py-4">
+              <select onchange="alterarStatusAtendimento('${atend.__backendId}', this.value)" class="text-sm border-2 border-gray-200 rounded-lg px-2 py-1">
+                <option value="">Alterar status...</option>
+                <option value="aguardando"> Aguardando</option>
+                <option value="confirmado"> Confirmado</option>
+                <option value="finalizado">🎉 Finalizado</option>
+                <option value="nao_respondida">❌ Não Respondida</option>
+              </select>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function alterarStatusAtendimento(id, novoStatus) {
+      if (!novoStatus) return;
+      
+      const atendimento = allData.find(a => a.__backendId === id);
+      if (atendimento) {
+        atendimento.status = novoStatus;
+        atualizarRegistro(atendimento);
+        showToast('✅ Status atualizado!', 'success');
+      }
+    }
+
+    function atualizarStatusAtendimentos() {
+      const atendimentos = allData.filter(item => item.tipo === 'atendimento');
+      
+      const andamento = atendimentos.filter(a => !a.status || a.status === 'andamento').length;
+      const aguardando = atendimentos.filter(a => a.status === 'aguardando').length;
+      const confirmados = atendimentos.filter(a => a.status === 'confirmado').length;
+      const finalizados = atendimentos.filter(a => a.status === 'finalizado').length;
+      const naoRespondidas = atendimentos.filter(a => a.status === 'nao_respondida').length;
+      
+      document.getElementById('status-atend-andamento').textContent = andamento;
+      document.getElementById('status-atend-aguardando').textContent = aguardando;
+      document.getElementById('status-atend-confirmados').textContent = confirmados;
+      document.getElementById('status-atend-finalizados').textContent = finalizados;
+      document.getElementById('status-atend-nao-respondidas').textContent = naoRespondidas;
+    }
+
+    function mudarAbaGerenciamento(aba) {
+      document.querySelectorAll('.tab-gerenciamento').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(`tab-${aba}`).classList.add('active');
+      
+      document.querySelectorAll('.gerenciamento-content').forEach(content => content.classList.add('hidden'));
+      document.getElementById(`gerenciamento-content-${aba}`).classList.remove('hidden');
+    }
+
+    function filtrarAtendimentos(filtro) {
+      filtroAtendimentoAtual = filtro;
+      
+      document.querySelectorAll('[id^="filtro-atend-"]').forEach(btn => {
+        btn.classList.remove('bg-green-600', 'text-white');
+        btn.classList.add('bg-gray-200', 'text-gray-700');
+      });
+      
+      document.getElementById(`filtro-atend-${filtro}`).classList.remove('bg-gray-200', 'text-gray-700');
+      document.getElementById(`filtro-atend-${filtro}`).classList.add('bg-green-600', 'text-white');
+      
+      renderAtendimentos();
+    }
+
+    // CAIXA
+    document.getElementById('form-transacao').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const transacao = {
+        tipo: 'transacao',
+        data: document.getElementById('trans-data').value,
+        tipo_transacao: document.getElementById('trans-tipo').value,
+        categoria: document.getElementById('trans-categoria').value,
+        valor: parseFloat(document.getElementById('trans-valor').value),
+        descricao: document.getElementById('trans-descricao').value.trim(),
+        forma_pagamento: document.getElementById('trans-forma-pagamento').value
+      };
+      
+      criarRegistro(transacao);
+      showToast('✅ Transação registrada!', 'success');
+      
+      this.reset();
+      document.getElementById('trans-data').value = new Date().toISOString().split('T')[0];
+    });
+
+    function atualizarDashboardCaixa() {
+      const hoje = dataSelecionadaCaixa.toISOString().split('T')[0];
+      const hojeReal = new Date().toISOString().split('T')[0];
+      const transacoes = allData.filter(t => t.tipo === 'transacao' && t.data === hoje);
+      
+      const valorInicialDia = allData.find(item => item.tipo === 'valor_inicial' && item.data === hoje);
+      const valorInicial = valorInicialDia ? valorInicialDia.valor : 0;
+      
+      // Atualizar info do valor inicial (somente se estiver visualizando o dia atual)
+      if (hoje === hojeReal) {
+        const valorInicialHoje = allData.find(item => item.tipo === 'valor_inicial' && item.data === hojeReal);
+        if (valorInicialHoje) {
+          document.getElementById('info-valor-inicial').textContent = `Valor inicial: R$ ${valorInicialHoje.valor.toFixed(2)}`;
+          document.getElementById('info-horario-inicial').textContent = valorInicialHoje.horario_registro || '--:--';
+        } else {
+          document.getElementById('info-valor-inicial').textContent = 'Nenhum valor registrado hoje';
+          document.getElementById('info-horario-inicial').textContent = '--:--';
+        }
+      } else {
+        document.getElementById('info-valor-inicial').textContent = `Visualizando: ${dataSelecionadaCaixa.toLocaleDateString('pt-BR')}`;
+        document.getElementById('info-horario-inicial').textContent = valorInicialDia ? `R$ ${valorInicial.toFixed(2)}` : 'Sem registro';
+      }
+      
+      const vendasDia = transacoes.filter(t => t.categoria === 'venda').reduce((sum, t) => sum + t.valor, 0);
+      const entradasDia = transacoes.filter(t => t.tipo_transacao === 'entrada').reduce((sum, t) => sum + t.valor, 0);
+      const saidasDia = transacoes.filter(t => t.tipo_transacao === 'saida').reduce((sum, t) => sum + t.valor, 0);
+      const saldoDia = valorInicial + entradasDia - saidasDia;
+      
+      // Calcular acumulado do mês atual
+      const mesAtual = dataSelecionadaCaixa.getMonth();
+      const anoAtual = dataSelecionadaCaixa.getFullYear();
+      
+      const transacoesMes = allData.filter(t => {
+        if (t.tipo !== 'transacao') return false;
+        const dataTransacao = new Date(t.data + 'T00:00:00');
+        return dataTransacao.getMonth() === mesAtual && dataTransacao.getFullYear() === anoAtual;
+      });
+      
+      const valoresIniciaisMes = allData.filter(t => {
+        if (t.tipo !== 'valor_inicial') return false;
+        const dataValor = new Date(t.data + 'T00:00:00');
+        return dataValor.getMonth() === mesAtual && dataValor.getFullYear() === anoAtual;
+      });
+      
+      const somaValoresIniciaisMes = valoresIniciaisMes.reduce((sum, t) => sum + t.valor, 0);
+      const saldoMes = somaValoresIniciaisMes + 
+                       transacoesMes.filter(t => t.tipo_transacao === 'entrada').reduce((sum, t) => sum + t.valor, 0) -
+                       transacoesMes.filter(t => t.tipo_transacao === 'saida').reduce((sum, t) => sum + t.valor, 0);
+      
+      document.getElementById('dash-vendas-dia').textContent = `R$ ${vendasDia.toFixed(2)}`;
+      document.getElementById('dash-entradas-dia').textContent = `R$ ${entradasDia.toFixed(2)}`;
+      document.getElementById('dash-saidas-dia').textContent = `R$ ${saidasDia.toFixed(2)}`;
+      document.getElementById('dash-caixa-atual').textContent = `R$ ${saldoDia.toFixed(2)}`;
+      document.getElementById('dash-saldo-total').textContent = `R$ ${saldoMes.toFixed(2)}`;
+    }
+
+    function renderTransacoes() {
+      const hoje = dataSelecionadaCaixa.toISOString().split('T')[0];
+      let transacoes = allData.filter(t => t.tipo === 'transacao' && t.data === hoje);
+      
+      if (filtroTransacaoAtual !== 'todas') {
+        transacoes = transacoes.filter(t => t.tipo_transacao === filtroTransacaoAtual);
+      }
+      
+      const dataInicio = document.getElementById('filtro-data-inicio').value;
+      const dataFim = document.getElementById('filtro-data-fim').value;
+      
+      if (dataInicio) {
+        transacoes = transacoes.filter(t => t.data >= dataInicio);
+      }
+      
+      if (dataFim) {
+        transacoes = transacoes.filter(t => t.data <= dataFim);
+      }
+      
+      const tbody = document.getElementById('transacoes-list');
+      
+      if (transacoes.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="px-4 py-12 text-center text-gray-500">
+              <div class="flex flex-col items-center gap-3">
+                <span class="text-5xl opacity-20">💰</span>
+                <span>Nenhuma transação encontrada</span>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      tbody.innerHTML = transacoes.map(trans => {
+        const tipoClasse = trans.tipo_transacao === 'entrada' ? 'text-green-600 font-bold' : 'text-red-600 font-bold';
+        const tipoIcone = trans.tipo_transacao === 'entrada' ? '💵' : '💸';
+        
+        return `
+          <tr class="border-b border-gray-100 hover:bg-gray-50">
+            <td class="px-4 py-4 text-gray-600">${new Date(trans.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+            <td class="px-4 py-4">
+              <span class="${tipoClasse}">${tipoIcone} ${trans.tipo_transacao === 'entrada' ? 'Entrada' : 'Saída'}</span>
+            </td>
+            <td class="px-4 py-4 text-gray-600 capitalize">${trans.categoria.replace('-', ' ')}</td>
+            <td class="px-4 py-4 text-gray-600 text-sm">${trans.descricao}</td>
+            <td class="px-4 py-4 text-gray-600 text-sm capitalize">${trans.forma_pagamento.replace('-', ' ')}</td>
+            <td class="px-4 py-4 ${tipoClasse}">R$ ${trans.valor.toFixed(2)}</td>
+            <td class="px-4 py-4">
+              <button onclick="deletarTransacao('${trans.__backendId}')" class="text-red-600 hover:text-red-800 font-semibold text-sm">🗑️ Excluir</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filtrarTransacoes(tipo) {
+      filtroTransacaoAtual = tipo;
+      
+      document.querySelectorAll('[id^="filtro-trans-"]').forEach(btn => {
+        btn.classList.remove('bg-green-600', 'text-white');
+        btn.classList.add('bg-gray-200', 'text-gray-700');
+      });
+      
+      document.getElementById(`filtro-trans-${tipo}`).classList.remove('bg-gray-200', 'text-gray-700');
+      document.getElementById(`filtro-trans-${tipo}`).classList.add('bg-green-600', 'text-white');
+      
+      renderTransacoes();
+    }
+
+    function aplicarFiltroDatas() {
+      renderTransacoes();
+    }
+
+    function limparFiltros() {
+      document.getElementById('filtro-data-inicio').value = '';
+      document.getElementById('filtro-data-fim').value = '';
+      filtroTransacaoAtual = 'todas';
+      
+      document.querySelectorAll('[id^="filtro-trans-"]').forEach(btn => {
+        btn.classList.remove('bg-green-600', 'text-white');
+        btn.classList.add('bg-gray-200', 'text-gray-700');
+      });
+      
+      document.getElementById('filtro-trans-todas').classList.remove('bg-gray-200', 'text-gray-700');
+      document.getElementById('filtro-trans-todas').classList.add('bg-green-600', 'text-white');
+      
+      renderTransacoes();
+    }
+
+    function deletarTransacao(id) {
+      const transacao = allData.find(t => t.__backendId === id);
+      if (transacao) {
+        deletarRegistro(transacao);
+        showToast('✅ Transação excluída!', 'success');
+      }
+    }
+
+    function mudarAbaCaixa(aba) {
+      document.querySelectorAll('.tab-gerenciamento').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(`tab-caixa-${aba}`).classList.add('active');
+      
+      document.querySelectorAll('.caixa-content').forEach(content => content.classList.add('hidden'));
+      document.getElementById(`caixa-content-${aba}`).classList.remove('hidden');
+    }
+
+    function mudarDiaCaixa(dias) {
+      dataSelecionadaCaixa.setDate(dataSelecionadaCaixa.getDate() + dias);
+      atualizarDisplayData();
+      atualizarDashboardCaixa();
+      renderTransacoes();
+    }
+
+    function irParaHoje() {
+      dataSelecionadaCaixa = new Date();
+      atualizarDisplayData();
+      atualizarDashboardCaixa();
+      renderTransacoes();
+    }
+
+    function atualizarDisplayData() {
+      const dataFormatada = dataSelecionadaCaixa.toLocaleDateString('pt-BR');
+      document.getElementById('data-selecionada-display').textContent = dataFormatada;
+    }
+
+    function abrirModalValorInicial() {
+      const modal = document.getElementById('modal-valor-inicial');
+      const hoje = new Date().toISOString().split('T')[0];
+      
+      document.getElementById('modal-valor-titulo').textContent = '💵 Registrar Valor do Dia';
+      document.getElementById('label-valor-inicial').textContent = 'Valor do Caixa (R$)';
+      document.getElementById('btn-submit-valor').textContent = 'Registrar';
+      document.getElementById('valor-inicial-valor').value = '';
+      document.getElementById('valor-inicial-data').value = hoje;
+      document.getElementById('valor-inicial-obs').value = '';
+      
+      modal.classList.remove('hidden');
+    }
+
+    function fecharModalValorInicial() {
+      document.getElementById('modal-valor-inicial').classList.add('hidden');
+      document.getElementById('form-valor-inicial').reset();
+    }
+
+    document.getElementById('form-valor-inicial').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const data = document.getElementById('valor-inicial-data').value;
+      const valorInformado = parseFloat(document.getElementById('valor-inicial-valor').value);
+      const obs = document.getElementById('valor-inicial-obs').value.trim();
+      
+      criarRegistro({
+        tipo: 'valor_inicial',
+        data: data,
+        valor: valorInformado,
+        observacoes: obs || '',
+        horario_registro: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      });
+      
+      showToast('✅ Valor registrado com sucesso!', 'success');
+      fecharModalValorInicial();
+      atualizarDashboardCaixa();
+    });
+
+    // GRÁFICOS
+    function renderGraficos() {
+      renderGraficoFormasPagamento();
+      renderGraficoProdutosVendidos();
+    }
+
+    function renderGraficoFormasPagamento() {
+      const hoje = dataSelecionadaCaixa.toISOString().split('T')[0];
+      const transacoes = allData.filter(t => t.tipo === 'transacao' && t.data === hoje);
+      
+      // Contar formas de pagamento
+      const formasPagamento = {};
+      transacoes.forEach(t => {
+        if (t.forma_pagamento) {
+          if (t.forma_pagamento === 'misto' && t.formas_pagamento_misto) {
+            // Para pagamento misto, contar cada forma individualmente
+            t.formas_pagamento_misto.forEach(fp => {
+              formasPagamento[fp.forma] = (formasPagamento[fp.forma] || 0) + 1;
+            });
+          } else {
+            formasPagamento[t.forma_pagamento] = (formasPagamento[t.forma_pagamento] || 0) + 1;
+          }
+        }
+      });
+      
+      const canvas = document.getElementById('grafico-formas-pagamento');
+      const ctx = canvas.getContext('2d');
+      const legenda = document.getElementById('legenda-formas-pagamento');
+      
+      // Limpar canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      if (Object.keys(formasPagamento).length === 0) {
+        ctx.fillStyle = '#9CA3AF';
+        ctx.font = 'bold 14px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText('Nenhuma transação', canvas.width / 2, canvas.height / 2);
+        legenda.innerHTML = '<p class="text-gray-500 text-sm text-center">Sem dados para exibir</p>';
+        return;
+      }
+      
+      const cores = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+      const labels = {
+        'dinheiro': '💵 Dinheiro',
+        'pix': '📱 PIX',
+        'cartao-debito': '💳 Débito',
+        'cartao-credito': '💳 Crédito',
+        'transferencia': '🏦 Transferência',
+        'boleto': '📄 Boleto'
+      };
+      
+      // Calcular total e percentuais
+      const total = Object.values(formasPagamento).reduce((sum, val) => sum + val, 0);
+      const dados = Object.entries(formasPagamento).map(([forma, quantidade]) => ({
+        forma,
+        quantidade,
+        percentual: (quantidade / total) * 100
+      }));
+      
+      // Desenhar grafico de pizza
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const radius = 120;
+      let currentAngle = -Math.PI / 2;
+      
+      dados.forEach((item, index) => {
+        const sliceAngle = (item.percentual / 100) * 2 * Math.PI;
+        
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+        ctx.lineTo(centerX, centerY);
+        ctx.fillStyle = cores[index % cores.length];
+        ctx.fill();
+        
+        currentAngle += sliceAngle;
+      });
+      
+      // Renderizar legenda
+      legenda.innerHTML = dados.map((item, index) => `
+        <div class="flex items-center justify-between text-sm">
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded" style="background: ${cores[index % cores.length]}"></div>
+            <span class="text-gray-700">${labels[item.forma] || item.forma}</span>
+          </div>
+          <span class="font-bold text-gray-800">${item.quantidade} (${item.percentual.toFixed(1)}%)</span>
+        </div>
+      `).join('');
+    }
+
+    function renderGraficoProdutosVendidos() {
+      const hoje = dataSelecionadaCaixa.toISOString().split('T')[0];
+      const transacoes = allData.filter(t => t.tipo === 'transacao' && t.data === hoje && t.categoria === 'venda');
+      
+      // Extrair produtos vendidos das transações
+      const produtosVendidos = {};
+      
+      transacoes.forEach(t => {
+        if (t.produtos_vendidos && Array.isArray(t.produtos_vendidos)) {
+          t.produtos_vendidos.forEach(produto => {
+            produtosVendidos[produto.nome] = (produtosVendidos[produto.nome] || 0) + produto.quantidade;
+          });
+        }
+      });
+      
+      const ranking = document.getElementById('ranking-produtos-vendidos');
+      
+      if (Object.keys(produtosVendidos).length === 0) {
+        ranking.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">Nenhuma venda hoje</p>';
+        return;
+      }
+      
+      const cores = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'];
+      const medalhaCores = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+      
+      // Ordenar e pegar top 5
+      const dados = Object.entries(produtosVendidos)
+        .map(([produto, quantidade]) => ({ produto, quantidade }))
+        .sort((a, b) => b.quantidade - a.quantidade)
+        .slice(0, 5);
+      
+      // Encontrar quantidade máxima para calcular largura das barras
+      const maxQuantidade = Math.max(...dados.map(d => d.quantidade));
+      
+      // Renderizar ranking
+      ranking.innerHTML = dados.map((item, index) => {
+        const larguraBarra = (item.quantidade / maxQuantidade) * 100;
+        const nomeTruncado = item.produto.length > 20 ? item.produto.substring(0, 20) + '...' : item.produto;
+        
+        return `
+          <div class="relative group">
+            <div class="flex items-center gap-3 mb-1">
+              <span class="text-2xl">${medalhaCores[index]}</span>
+              <span class="text-sm font-semibold text-gray-700 flex-1 cursor-help" title="${item.produto}">${nomeTruncado}</span>
+              <span class="text-sm font-bold text-gray-800">${item.quantidade} un.</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-500" style="width: ${larguraBarra}%; background: ${cores[index % cores.length]}"></div>
+            </div>
+            <!-- Tooltip ao passar o mouse -->
+            <div class="absolute left-0 -top-12 bg-gray-800 text-white px-3 py-2 rounded-lg text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10 shadow-lg">
+              ${item.produto}
+              <div class="absolute left-4 -bottom-1 w-2 h-2 bg-gray-800 transform rotate-45"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c6ac8b01438ba19',t:'MTc2OTg3OTAyMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

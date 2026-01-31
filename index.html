@@ -254,6 +254,9 @@
   <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
  </head>
  <body class="w-full h-full"><!-- Mobile Header -->
+
+
+  
   <header class="mobile-header bg-gradient-to-r from-green-700 to-green-900 text-white p-4 shadow-lg items-center justify-between"><button onclick="toggleMobileSidebar()" class="text-white text-2xl">☰</button>
    <h1 class="text-xl font-bold">MedicBio</h1>
    <div class="w-8"></div>
@@ -744,7 +747,7 @@
              <div class="flex justify-between text-xl font-bold text-green-600"><span>TOTAL:</span> <span id="carrinho-total">R$ 0,00</span>
              </div>
             </div><!-- Forma de Pagamento -->
-            <div class="mt-4"><label class="block text-sm font-semibold text-gray-700 mb-2">Forma de Pagamento</label> <select id="forma-pagamento-venda" onchange="verificarPagamentoMisto()" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none"> <option value="">Selecione...</option> <option value="dinheiro">💵 Dinheiro</option> <option value="pix">📱 PIX</option> <option value="cartao-debito">💳 Cartão de Débito</option> <option value="cartao-credito">💳 Cartão de Crédito</option> <option value="misto">🔀 Pagamento Misto</option> </select>
+            <div class="mt-4"><label class="block text-sm font-semibold text-gray-700 mb-2">Forma de Pagamento</label> <select id="forma-pagamento-venda" onchange="verificarPagamentoMisto()" class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none"> <option value="">Selecione...</option> <option value="dinheiro">💵 Dinheiro</option> <option value="pix">📱 PIX</option> <option value="cartao-debito">💳 Cartão de Débito</option> <option value="cartao-credito">💳 Cartão de Crédito</option>  </select>
             </div><!-- Campos de Pagamento Misto (oculto inicialmente) -->
             <div id="campos-pagamento-misto" class="mt-4 space-y-3 hidden">
              <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
@@ -1184,18 +1187,26 @@ function confirmarImportacao(backupData) {
       setTimeout(() => toast.remove(), 3000);
     }
 
-    function init() {
-      carregarDados();
-      const hoje = new Date().toISOString().split('T')[0];
-      document.getElementById('produto-validade').value = hoje;
-      document.getElementById('cliente-data-cadastro').value = hoje;
-      document.getElementById('atend-data').value = hoje;
-      document.getElementById('trans-data').value = hoje;
-      dataSelecionadaCaixa = new Date();
-      atualizarDisplayData();
-      showModule('produtos');
-      atualizarUI();
-    }
+    // Localize esta parte no final do seu arquivo index.html:
+function init() {
+    carregarDados();
+    
+    // Forma segura de pegar a data local YYYY-MM-DD
+    const agora = new Date();
+    const hoje = agora.getFullYear() + '-' + 
+                 String(agora.getMonth() + 1).padStart(2, '0') + '-' + 
+                 String(agora.getDate()).padStart(2, '0');
+
+    document.getElementById('produto-validade').value = hoje;
+    document.getElementById('cliente-data-cadastro').value = hoje;
+    document.getElementById('atend-data').value = hoje;
+    document.getElementById('trans-data').value = hoje;
+    
+    dataSelecionadaCaixa = new Date();
+    atualizarDisplayData();
+    showModule('produtos');
+    atualizarUI();
+}
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init);
@@ -1454,7 +1465,7 @@ function confirmarImportacao(backupData) {
       
       doc.setFontSize(11);
       doc.setFont(undefined, 'normal');
-      doc.text("FARMÁCIA DE MANIPULAÇÃO", 105, 27, { align: "center" });
+    
       
       // Informações da Empresa (em branco sobre o verde)
       doc.setFontSize(8);
@@ -1492,7 +1503,8 @@ function confirmarImportacao(backupData) {
       doc.text(new Date().toLocaleTimeString('pt-BR'), 35, 82);
       const numeroRecibo = Math.floor(Math.random() * 100000).toString().padStart(6, '0');
       doc.text(`#${numeroRecibo}`, 135, 76);
-      doc.text(dadosVenda.formaPagamentoTexto, 110, 82);
+      
+
 
       // ===== TABELA DE PRODUTOS =====
       let y = 100;
@@ -1553,13 +1565,13 @@ function confirmarImportacao(backupData) {
       
       doc.setFont(undefined, 'normal');
       doc.text("Subtotal:", 125, y);
-      doc.text(`R$ ${dadosVenda.subtotal.toFixed(2)}`, 190, y, { align: "right" });
+      doc.text(`R\u00A4 ${dadosVenda.total.toFixed(2)}`, 190, y, { align: "right" });
       
       if (dadosVenda.desconto > 0) {
         y += 7;
         doc.setTextColor(220, 38, 38);
         doc.text(`Desconto (${dadosVenda.desconto}%):`, 125, y);
-        doc.text(`- R$ ${dadosVenda.valorDesconto.toFixed(2)}`, 190, y, { align: "right" });
+        doc.text(`R\u00A4 ${dadosVenda.total.toFixed(2)}`, 190, y, { align: "right" });
       }
       
       // Total destacado
@@ -1568,7 +1580,7 @@ function confirmarImportacao(backupData) {
       doc.setFontSize(14);
       doc.setTextColor(16, 185, 129);
       doc.text("TOTAL:", 125, y);
-      doc.text(`R$ ${dadosVenda.total.toFixed(2)}`, 190, y, { align: "right" });
+      doc.text('R$ ' + dadosVenda.total.toFixed(2), 190, y, { align: "right" });
 
       // ===== QR CODES E RODAPÉ =====
       y = 240; // Posição fixa para o rodapé
@@ -1621,7 +1633,7 @@ function confirmarImportacao(backupData) {
       doc.setFont(undefined, 'normal');
       doc.setTextColor(100, 100, 100);
       doc.text("Horário de funcionamento: Segunda a Sábado - 08:00 às 18:00", 105, y + 16, { align: "center" });
-      doc.text("Este documento não possui valor fiscal", 105, y + 21, { align: "center" });
+      
 
       // ===== BAIXAR ARQUIVO =====
       const dataFormatada = new Date().toISOString().split('T')[0].replace(/-/g, '');
@@ -2607,7 +2619,8 @@ function confirmarImportacao(backupData) {
 
     function abrirModalValorInicial() {
       const modal = document.getElementById('modal-valor-inicial');
-      const hoje = new Date().toISOString().split('T')[0];
+      const dataRecibo = new Date().toLocaleDateString('pt-BR');
+
       
       document.getElementById('modal-valor-titulo').textContent = '💵 Registrar Valor do Dia';
       document.getElementById('label-valor-inicial').textContent = 'Valor do Caixa (R$)';
