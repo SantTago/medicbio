@@ -1,0 +1,165 @@
+
+       
+       <!-- Form Nova Transação -->
+       <div class="card bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-6">
+        <h3 class="text-2xl font-bold text-gray-800 mb-6">+ Nova Transação</h3>
+
+  <form id="form-transacao" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+        <label for="trans-data" class="block text-sm font-semibold text-gray-700 mb-2">Data da Transação</label>
+        <input type="date" id="trans-data" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none">
+    </div>
+    <div>
+        <label for="trans-tipo" class="block text-sm font-semibold text-gray-700 mb-2">Tipo de Transação</label>
+        <select id="trans-tipo" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none">
+            <option value="">Selecione...</option>
+            <option value="entrada">💵 Entrada</option>
+            <option value="saida">💸 Saída</option>
+        </select>
+    </div>
+    <div>
+        <label for="trans-valor" class="block text-sm font-semibold text-gray-700 mb-2">Valor (R$)</label>
+        <input type="number" id="trans-valor" step="0.01" min="0" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none">
+    </div>
+    <div>
+        <label for="trans-pagamento" class="block text-sm font-semibold text-gray-700 mb-2">Forma de Pagamento</label>
+        <select id="trans-pagamento" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none">
+            <option value="">Selecione...</option>
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="PIX">PIX</option>
+            <option value="Cartão de Crédito">Cartão de Crédito</option>
+            <option value="Cartão de Débito">Cartão de Débito</option>
+        </select>
+    </div>
+    <div class="md:col-span-2">
+        <label for="trans-descricao" class="block text-sm font-semibold text-gray-700 mb-2">Descrição (Livre)</label>
+        <textarea id="trans-descricao" rows="3" required placeholder="Digite aqui os detalhes da entrada ou saída..." class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none"></textarea>
+    </div>
+    <div class="md:col-span-2">
+        <button type="submit" class="btn-primary text-white w-full py-4 rounded-xl font-bold text-lg shadow-lg">
+            Registrar Transação
+        </button>
+    </div>
+</form>
+
+
+
+
+
+ <div class="stat-card rounded-2xl shadow-lg p-6 text-white" style="--color-from: #EF4444; --color-to: #DC2626;">
+         <p class="text-red-100 text-sm mb-2 font-semibold">💸 Saídas do Dia</p>
+         <p id="dash-saidas-dia" class="text-4xl font-bold">R$ 0,00</p>
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       <!-- Modal Valor Inicial -->
+     <div id="modal-valor-inicial" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+       <div class="bg-gradient-to-r from-green-700 to-green-900 text-white p-6 rounded-t-2xl flex justify-between items-center">
+        <h2 id="modal-valor-titulo" class="text-2xl font-bold">💵 Registrar Valor do Dia</h2><button onclick="fecharModalValorInicial()" class="text-white text-3xl hover:text-red-300 transition">✕</button>
+       </div>
+       <form id="form-valor-inicial" class="p-6 space-y-6">
+        <div><label for="valor-inicial-data" class="block text-sm font-semibold text-gray-700 mb-2">Data</label> <input type="date" id="valor-inicial-data" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+        </div>
+        <div><label for="valor-inicial-valor" id="label-valor-inicial" class="block text-sm font-semibold text-gray-700 mb-2">Valor do Caixa (R$)</label> <input type="number" id="valor-inicial-valor" step="0.01" min="0" required class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none">
+        </div>
+        <div><label for="valor-inicial-obs" class="block text-sm font-semibold text-gray-700 mb-2">Observações (opcional)</label> <textarea id="valor-inicial-obs" rows="3" placeholder="Ex: Dinheiro do dia anterior, troco do cofre..." class="form-input w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"></textarea>
+        </div>
+        <div class="flex gap-3"><button type="button" onclick="fecharModalValorInicial()" class="btn-secondary text-white px-6 py-3 rounded-xl font-semibold flex-1">X</button> <button type="submit" id="btn-submit-valor" class="btn-primary text-white px-6 py-3 rounded-xl font-semibold flex-1">Registrar</button>
+        </div>
+       </form>
+      </div>
+     </div>
+
+
+     <button onclick="abrirModalValorInicial()" id="btn-fechar-caixa" class="btn-primary text-white px-6 py-3 rounded-xl font-bold shadow-lg"> 💵 Registrar Valor do Dia </button>
+       </div>
+
+
+             // Atualizar info do valor inicial (somente se estiver visualizando o dia atual)
+      if (hoje === hojeReal) {
+        const valorInicialHoje = allData.find(item => item.tipo === 'valor_inicial' && item.data === hojeReal);
+        if (valorInicialHoje) {
+          document.getElementById('info-valor-inicial').textContent = `Valor inicial: R$ ${valorInicialHoje.valor.toFixed(2)}`;
+          document.getElementById('info-horario-inicial').textContent = valorInicialHoje.horario_registro || '--:--';
+        } else {
+          document.getElementById('info-valor-inicial').textContent = 'Nenhum valor registrado hoje';
+          document.getElementById('info-horario-inicial').textContent = '--:--';
+        }
+      } else {
+        document.getElementById('info-valor-inicial').textContent = `Visualizando: ${dataSelecionadaCaixa.toLocaleDateString('pt-BR')}`;
+        document.getElementById('info-horario-inicial').textContent = valorInicialDia ? `R$ ${valorInicial.toFixed(2)}` : 'Sem registro';
+      }
+      
+      
+      const vendasDia = transacoes.filter(t => t.categoria === 'venda').reduce((sum, t) => sum + t.valor, 0);
+      const entradasDia = transacoes.filter(t => t.tipo_transacao === 'entrada').reduce((sum, t) => sum + t.valor, 0);
+      const saidasDia = transacoes.filter(t => t.tipo_transacao === 'saida').reduce((sum, t) => sum + t.valor, 0);
+      const saldoDia = valorInicial + entradasDia - saidasDia;
+      
+      // Calcular acumulado do mês atual
+      const mesAtual = dataSelecionadaCaixa.getMonth();
+      const anoAtual = dataSelecionadaCaixa.getFullYear();
+      
+      const transacoesMes = allData.filter(t => {
+        if (t.tipo !== 'transacao') return false;
+        const dataTransacao = new Date(t.data + 'T00:00:00');
+        return dataTransacao.getMonth() === mesAtual && dataTransacao.getFullYear() === anoAtual;
+      });
+      
+      const valoresIniciaisMes = allData.filter(t => {
+        if (t.tipo !== 'valor_inicial') return false;
+        const dataValor = new Date(t.data + 'T00:00:00');
+        return dataValor.getMonth() === mesAtual && dataValor.getFullYear() === anoAtual;
+      });
+      
+      const somaValoresIniciaisMes = valoresIniciaisMes.reduce((sum, t) => sum + t.valor, 0);
+      const saldoMes = somaValoresIniciaisMes + 
+                       transacoesMes.filter(t => t.tipo_transacao === 'entrada').reduce((sum, t) => sum + t.valor, 0) -
+                       transacoesMes.filter(t => t.tipo_transacao === 'saida').reduce((sum, t) => sum + t.valor, 0);
+      
+      document.getElementById('dash-vendas-dia').textContent = `R$ ${vendasDia.toFixed(2)}`;
+      document.getElementById('dash-entradas-dia').textContent = `R$ ${entradasDia.toFixed(2)}`;
+      document.getElementById('dash-saidas-dia').textContent = `R$ ${saidasDia.toFixed(2)}`;
+      document.getElementById('dash-caixa-atual').textContent = `R$ ${saldoDia.toFixed(2)}`;
+      document.getElementById('dash-saldo-total').textContent = `R$ ${saldoMes.toFixed(2)}`;
+      
+    }
+
+
+
+
+
+     <div class="text-left">
+          <p class="text-sm text-gray-600" id="info-valor-inicial">Nenhum valor registrado hoje</p>
+          <p class="text-lg font-bold text-gray-800" id="info-horario-inicial">--:--</p>
+         </div>
+
+         
