@@ -958,14 +958,17 @@
               </div>
 
               <div class="mt-6 space-y-3">
+
                 <button id="btn-finalizar-venda" onclick="finalizarVenda()" 
                         class="btn-primary text-white px-6 py-4 rounded-xl font-bold text-lg w-full shadow-lg"> 
                   ✓ Finalizar Venda 
                 </button> 
+
                 <button onclick="limparCarrinho()" 
                         class="btn-secondary text-white px-6 py-3 rounded-xl font-semibold w-full"> 
                   🗑️ Limpar Carrinho 
                 </button>
+
               </div>
 
             </div>
@@ -1799,7 +1802,7 @@ function finalizarVenda() {
 
     // Objeto para o PDF e Processamento
     const dadosVenda = {
-        data: new Date().toISOString().split('T')[0],
+        data: dataSelecionadaCaixa.toISOString().split('T')[0],
         itens: carrinhoVendas.map(item => ({
             nome: item.nome,
             quantidade: item.quantidade,
@@ -2087,6 +2090,13 @@ async function gerarReciboPDF(dadosVenda) {
         'boleto': '📄 Boleto'
       };
 
+
+
+
+
+
+      
+
       
       if (formaPagamento === 'misto') {
         const forma1 = document.getElementById('misto-forma1').value;
@@ -2111,7 +2121,7 @@ async function gerarReciboPDF(dadosVenda) {
       
       // Preparar dados para o PDF
       const dadosVenda = {
-        data: new Date().toISOString().split('T')[0],
+        data: dataSelecionadaCaixa.toISOString().split('T')[0],
         itens: carrinhoVendas.map(item => ({
           nome: item.nome,
           quantidade: item.quantidade,
@@ -2132,6 +2142,7 @@ async function gerarReciboPDF(dadosVenda) {
           <h3 class="text-2xl font-bold mb-4 text-gray-800">📄 Gerar Recibo em PDF?</h3>
           <p class="text-gray-600 mb-6">Deseja baixar o recibo desta venda em PDF?</p>
           <div class="flex gap-3">
+            
             <button onclick="processarVendaSemPDF(${JSON.stringify(dadosVenda).replace(/"/g, '&quot;')})" class="btn-secondary text-white px-6 py-3 rounded-xl flex-1 font-semibold">Não</button>
             <button onclick="processarVendaComPDF(${JSON.stringify(dadosVenda).replace(/"/g, '&quot;')})" class="btn-primary text-white px-6 py-3 rounded-xl flex-1 font-semibold">✓ Sim, Gerar PDF</button>
           </div>
@@ -2142,136 +2153,209 @@ async function gerarReciboPDF(dadosVenda) {
     
     // Substitua as funções existentes por estas:
 
+// --- INÍCIO DA CORREÇÃO ---
+
+
+
+
+// Função Wrapper para SEM PDF
 function processarVendaSemPDF(dadosVenda) {
-    processarVenda(dadosVenda, false);
-    fecharModalVenda();
-}
-
-async function processarVendaComPDF(dadosVenda) {
-    await processarVenda(dadosVenda, true);
-    fecharModalVenda();
-}
-
-// Nova função auxiliar para fechar o modal com segurança e resetar a interface
-function fecharModalVenda() {
-    // 1. Remove apenas o modal de confirmação específico
+    // 1. Verifica se já existe uma venda sendo processada para evitar duplicidade
+    if (vendaEmProcessamento) return;
+    
+    // 2. Fecha manualmente a janelinha (modal) de confirmação do PDF
+    // Buscamos o elemento que contém o texto de confirmação e o escondemos
     const modais = document.querySelectorAll('.fixed.inset-0');
-    modais.forEach(el => {
-        // Verifica se o modal contém o texto de "Gerar PDF" ou se foi o último criado
-        if (el.innerHTML.includes('Gerar Recibo') || el.innerHTML.includes('Sim, Gerar PDF')) {
-            el.remove();
+    modais.forEach(modal => {
+        if (!modal.classList.contains('hidden') && modal.innerText.includes('Gerar Recibo')) {
+            modal.classList.add('hidden');
         }
     });
 
-    // 2. Fecha o Painel de Vendas (Módulo de Venda)
-    // Isso garante que o botão "Vendas" possa ser clicado novamente para reabrir
-    document.getElementById('modulo-venda').classList.add('hidden');
+    // 3. Chama a função principal passando 'false' para não gerar o PDF
+    processarVenda(dadosVenda, false);
     
-    // 3. Limpa o carrinho e reseta os botões
-    limparCarrinho();
-    
-    // 4. Força a atualização da UI para garantir que os eventos do menu funcionem
-    atualizarUI();
+    // 4. Fecha o modal principal de vendas (carrinho)
+    if (typeof fecharModalVenda === 'function') {
+        fecharModalVenda();
+    }
 }
-    
-    async function processarVenda(dadosVenda, gerarPDF) {
-      try {
-        vendaEmProcessamento = true;
-        const btn = document.getElementById('btn-finalizar-venda');
-        btn.disabled = true;
-        btn.innerHTML = 'Processando...<span class="loading-spinner"></span>';
+
+
+
+
+
+
+
+
+
+
+// Função Wrapper para COM PDF
+
+async function processarVendaComPDF(dadosVenda) {
+    // 1. Trava de segurança
+    if (vendaEmProcessamento) return;
+
+    // 2. Localiza a janelinha de confirmação (pelo texto do título ou botão)
+    // Procura qualquer modal aberto que tenha "Gerar Recibo" ou o botão "Sim, Gerar PDF"
+    const modalConfirmacao = Array.from(document.querySelectorAll('.fixed.inset-0')).find(
+        m => !m.classList.contains('hidden') && (m.innerText.includes('Gerar Recibo') || m.innerText.includes('Gerar PDF'))
+    );
+
+    // 3. Feedback Visual: Muda o texto do botão para "Gerando..." e bloqueia
+    if (modalConfirmacao) {
+        const btn = modalConfirmacao.querySelector('button.bg-green-600') || modalConfirmacao.querySelector('button');
+        if (btn) {
+            btn.innerHTML = '⏳ Gerando...'; // Mostra que está trabalhando
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    }
+
+    try {
+        // 4. Processa a venda (Salva no banco e gera o PDF)
+        // O 'await' garante que ele espere o PDF ficar pronto antes de fechar
+        await processarVenda(dadosVenda, true);
         
+    } catch (erro) {
+        console.error("Erro no processo:", erro);
+    } finally {
+        // 5. FECHA TUDO (O Pulo do Gato)
+        
+        // Fecha a janelinha de confirmação do PDF
+        if (modalConfirmacao) {
+            modalConfirmacao.classList.add('hidden'); 
+            // Se precisar remover do DOM ou resetar o botão, pode fazer aqui
+            // Mas adicionar 'hidden' já resolve visualmente
+        }
+
+        // Fecha o modal principal de vendas (carrinho)
+        fecharModalVenda(); 
+    }
+}
+
+
+
+
+// Função Principal de Processamento
+async function processarVenda(dadosVenda, gerarPDF) {
+    // 1. TRAVA DE SEGURANÇA (O Pulo do Gato)
+    if (vendaEmProcessamento) {
+        console.warn('Venda já está sendo processada. Clique ignorado.');
+        return;
+    }
+
+    try {
+        vendaEmProcessamento = true; // Ativa a trava
+
+        // Atualiza botão principal (caso visível)
+        const btn = document.getElementById('btn-finalizar-venda');
+        if(btn) {
+            btn.disabled = true;
+            btn.innerHTML = 'Processando...<span class="loading-spinner"></span>';
+        }
+        
+        // Recupera forma de pagamento para salvar corretamente
         const formaPagamento = document.getElementById('forma-pagamento-venda').value;
         
-        // Criar descrição detalhada com produtos
+        // Recria a lógica de descrição para salvar no banco (igual você já tinha)
         let descricaoFormaPagamento = '';
         let formasPagamentoArray = [];
         
         if (formaPagamento === 'misto') {
-          const forma1 = document.getElementById('misto-forma1').value;
-          const forma2 = document.getElementById('misto-forma2').value;
-          const forma3 = document.getElementById('misto-forma3').value;
-          const valor1 = parseFloat(document.getElementById('misto-valor1').value) || 0;
-          const valor2 = parseFloat(document.getElementById('misto-valor2').value) || 0;
-          const valor3 = parseFloat(document.getElementById('misto-valor3').value) || 0;
-          
-          const labelsFormas = {
-            'dinheiro': 'Dinheiro',
-            'pix': 'PIX',
-            'cartao-debito': 'Débito',
-            'cartao-credito': 'Crédito'
-          };
-          
-          formasPagamentoArray.push({ forma: forma1, valor: valor1 });
-          formasPagamentoArray.push({ forma: forma2, valor: valor2 });
-          if (forma3 && valor3 > 0) {
-            formasPagamentoArray.push({ forma: forma3, valor: valor3 });
-          }
-          
-          descricaoFormaPagamento = formasPagamentoArray
-            .map(fp => `${labelsFormas[fp.forma] || fp.forma}: R$ ${fp.valor.toFixed(2)}`)
-            .join(' + ');
+            // Lógica do pagamento misto
+            const forma1 = document.getElementById('misto-forma1').value;
+            const forma2 = document.getElementById('misto-forma2').value;
+            const forma3 = document.getElementById('misto-forma3').value;
+            const valor1 = parseFloat(document.getElementById('misto-valor1').value) || 0;
+            const valor2 = parseFloat(document.getElementById('misto-valor2').value) || 0;
+            const valor3 = parseFloat(document.getElementById('misto-valor3').value) || 0;
+            
+            const labelsFormas = {
+                'dinheiro': 'Dinheiro', 'pix': 'PIX',
+                'cartao-debito': 'Débito', 'cartao-credito': 'Crédito'
+            };
+            
+            formasPagamentoArray.push({ forma: forma1, valor: valor1 });
+            formasPagamentoArray.push({ forma: forma2, valor: valor2 });
+            if (forma3 && valor3 > 0) {
+                formasPagamentoArray.push({ forma: forma3, valor: valor3 });
+            }
+            
+            descricaoFormaPagamento = formasPagamentoArray
+                .map(fp => `${labelsFormas[fp.forma] || fp.forma}: R$ ${fp.valor.toFixed(2)}`)
+                .join(' + ');
         }
         
+        // 2. SALVA O REGISTRO (Apenas uma vez garantido pela trava acima)
         criarRegistro({
-          tipo: 'transacao',
-          data: new Date().toISOString().split('T')[0],
-          tipo_transacao: 'entrada',
-          categoria: 'venda',
-          valor: dadosVenda.total,
-          descricao: `Venda - ${carrinhoVendas.length} item(ns) - Desconto: ${dadosVenda.desconto}%${formaPagamento === 'misto' ? ' - Misto: ' + descricaoFormaPagamento : ''}`,
-          forma_pagamento: formaPagamento,
-          formas_pagamento_misto: formaPagamento === 'misto' ? formasPagamentoArray : null,
-          produtos_vendidos: carrinhoVendas.map(item => ({
-            produto_id: item.produto_id,
-            nome: item.nome,
-            quantidade: item.quantidade,
-            valor_unitario: item.valor_unitario
-          }))
+            tipo: 'transacao',
+            data: dataSelecionadaCaixa.toISOString().split('T')[0],
+            tipo_transacao: 'entrada',
+            categoria: 'venda',
+            valor: dadosVenda.total,
+            descricao: `Venda - ${carrinhoVendas.length} item(ns) - Desconto: ${dadosVenda.desconto}%${formaPagamento === 'misto' ? ' - Misto: ' + descricaoFormaPagamento : ''}`,
+            forma_pagamento: formaPagamento,
+            formas_pagamento_misto: formaPagamento === 'misto' ? formasPagamentoArray : null,
+            produtos_vendidos: carrinhoVendas.map(item => ({
+                produto_id: item.produto_id,
+                nome: item.nome,
+                quantidade: item.quantidade,
+                valor_unitario: item.valor_unitario
+            }))
         });
         
+        // Baixa o estoque
         carrinhoVendas.forEach(item => {
-          const produto = allData.find(p => p.__backendId === item.produto_id);
-          if (produto) {
-            produto.estoque -= item.quantidade;
-            atualizarRegistro(produto);
-          }
+            const produto = allData.find(p => p.__backendId === item.produto_id);
+            if (produto) {
+                produto.estoque -= item.quantidade;
+                atualizarRegistro(produto);
+            }
         });
         
-        // Gerar PDF se solicitado
+        // 3. GERA O PDF (Se solicitado)
         if (gerarPDF) {
-          await gerarReciboPDF(dadosVenda);
+            await gerarReciboPDF(dadosVenda);
         }
         
+        // 4. LIMPEZA E ATUALIZAÇÃO
         carrinhoVendas = [];
         document.getElementById('carrinho-desconto').value = '0';
         document.getElementById('forma-pagamento-venda').value = '';
         document.getElementById('campos-pagamento-misto').classList.add('hidden');
         
         // Limpar campos do misto
-        document.getElementById('misto-forma1').value = '';
-        document.getElementById('misto-forma2').value = '';
-        document.getElementById('misto-forma3').value = '';
-        document.getElementById('misto-valor1').value = '';
-        document.getElementById('misto-valor2').value = '';
-        document.getElementById('misto-valor3').value = '';
+        ['misto-forma1', 'misto-forma2', 'misto-forma3', 
+         'misto-valor1', 'misto-valor2', 'misto-valor3'].forEach(id => {
+             const el = document.getElementById(id);
+             if(el) el.value = '';
+        });
         
         renderCarrinho();
         atualizarTotalizador();
         renderProdutosVenda();
-        atualizarDashboardCaixa();
+        
+        // Sincroniza dashboard
         sincronizarFechamento(dadosVenda.data);
-        document.getElementById('dash-saidas-dia').textContent = `R$ ${saidasDia.toFixed(2)}`;
+        if (typeof atualizarDashboardCaixa === 'function') atualizarDashboardCaixa();
         
         showToast('✅ Venda realizada com sucesso!', 'success');
         
-      } finally {
+    } catch (error) {
+        console.error("Erro ao processar venda:", error);
+        showToast('❌ Erro ao processar venda', 'error');
+    } finally {
+        // 5. LIBERA A TRAVA (Importante!)
         const btn = document.getElementById('btn-finalizar-venda');
-        btn.disabled = false;
-        btn.innerHTML = ' Finalizar Venda';
+        if(btn) {
+            btn.disabled = false;
+            btn.innerHTML = ' ✓ Finalizar Venda';
+        }
         vendaEmProcessamento = false;
-      }
     }
+}
+// --- FIM DA CORREÇÃO ---
     
     function limparCarrinho() {
       carrinhoVendas = [];
@@ -3393,6 +3477,7 @@ function registrarSaida() {
         return;
     }
 
+
     // Cria o objeto da transação
     const novaSaida = {
         tipo: 'transacao',
@@ -3417,6 +3502,9 @@ function registrarSaida() {
     if (typeof atualizarDashboardCaixa === 'function') atualizarDashboardCaixa(); 
     if (typeof renderTransacoes === 'function') renderTransacoes();
 }
+
+
+
 
 
 
